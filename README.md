@@ -7,7 +7,7 @@ Find documentation at [https://docs.connext.network/](https://docs.connext.netwo
 Modifications include:
 
 - Using solidity v0.5 compiler
-- Using `block.timestamp` instead of `block.number` (NOTE: `block.timestamp` is also not implemented, so the HashlockTransferApp was removed)
+- Using `block.timestamp` instead of `block.number` (NOTE: `block.timestamp` is also not implemented, so the `HashlockTransferApp`, adjudicator contracts, and `TimeLockPassThrough` were removed)
 - Adjustments for not having native ETH
 - Reverting contract infra to use waffle instead of buidler
 
