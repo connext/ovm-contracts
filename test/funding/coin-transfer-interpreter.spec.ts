@@ -6,8 +6,12 @@ import { BigNumber, defaultAbiCoder } from "ethers/utils";
 import DolphinCoin from "../../artifacts/DolphinCoin.json";
 import MultiAssetMultiPartyCoinTransferInterpreter from "../../artifacts/MultiAssetMultiPartyCoinTransferInterpreter.json";
 
-import { expect, createProvider } from "../utils";
-import { MockProvider } from "ethereum-waffle";
+import { expect } from "../utils";
+import {
+  createMockProvider,
+  getWallets,
+  deployContract,
+} from "@eth-optimism/rollup-full-node";
 
 type CoinTransfer = {
   to: string;
@@ -38,11 +42,16 @@ function encodeOutcome(state: CoinTransfer[][]) {
   );
 }
 
-describe("MultiAssetMultiPartyCoinTransferInterpreter", () => {
-  let wallet: Wallet;
+const defaultDeployOptions = {
+  gasLimit: 4000000,
+  gasPrice: 9000000000,
+};
+
+describe.only("MultiAssetMultiPartyCoinTransferInterpreter", () => {
+  let wallet: any;
   let erc20: Contract;
   let multiAssetMultiPartyCoinTransferInterpreter: Contract;
-  const provider: MockProvider = createProvider();
+  let provider;
 
   async function interpretOutcomeAndExecuteEffect(
     state: CoinTransfer[][],
@@ -61,30 +70,56 @@ describe("MultiAssetMultiPartyCoinTransferInterpreter", () => {
   }
 
   beforeEach(async () => {
-    wallet = (await provider.getWallets())[0];
-    erc20 = await new ContractFactory(
+    let txs = 0;
+    provider = createMockProvider();
+    // provider.getTransactionCount = () => Promise.resolve(txs);
+    const wallet = getWallets(provider)[0];
+    console.log(`wallet`, wallet);
+    // erc20 = await deployContract(wallet, DolphinCoin, []);
+    txs += 1;
+    const factory = new ContractFactory(
       DolphinCoin.abi,
       DolphinCoin.bytecode,
       wallet
-    ).deploy();
-
-    multiAssetMultiPartyCoinTransferInterpreter = await new ContractFactory(
-      MultiAssetMultiPartyCoinTransferInterpreter.abi,
-      MultiAssetMultiPartyCoinTransferInterpreter.bytecode,
-      wallet
-    ).deploy();
-
-    // fund interpreter with ERC20 tokenAddresses
-    await erc20.functions.transfer(
-      multiAssetMultiPartyCoinTransferInterpreter.address,
-      erc20.functions.balanceOf(wallet.address)
     );
+    const contract = await factory.deploy({ ...defaultDeployOptions });
+    const receipt = await wallet.provider.getTransactionReceipt(
+      contract.deployTransaction.hash!
+    );
+    erc20 = new Contract(receipt.contractAddress!, DolphinCoin.abi, wallet);
+    console.log(`erc20`, erc20.address);
 
-    // fund interpreter with ETH
-    await wallet.sendTransaction({
-      to: multiAssetMultiPartyCoinTransferInterpreter.address,
-      value: new BigNumber(100),
-    });
+    // multiAssetMultiPartyCoinTransferInterpreter = await deployOvmContract(
+    //   wallet,
+    //   MultiAssetMultiPartyCoinTransferInterpreter
+    // );
+
+    // multiAssetMultiPartyCoinTransferInterpreter = await new ContractFactory(
+    //   MultiAssetMultiPartyCoinTransferInterpreter.abi,
+    //   MultiAssetMultiPartyCoinTransferInterpreter.bytecode,
+    //   wallet
+    // ).deploy();
+    // console.log(
+    //   `multiAssetMultiPartyCoinTransferInterpreter`,
+    //   multiAssetMultiPartyCoinTransferInterpreter.address
+    // );
+
+    const tokenBal = await erc20.balanceOf(wallet.address);
+
+    console.log(`balance of wallet`, tokenBal.toString());
+
+    // // fund interpreter with ERC20 tokenAddresses
+    // await erc20.transfer(
+    //   multiAssetMultiPartyCoinTransferInterpreter.address,
+    //   tokenBal
+    // );
+    // console.log(`transferred bal to interpreter`);
+
+    // // fund interpreter with ETH
+    // await wallet.sendTransaction({
+    //   to: multiAssetMultiPartyCoinTransferInterpreter.address,
+    //   value: new BigNumber(100),
+    // });
   });
 
   it("Can distribute ETH coins only correctly to one person", async () => {

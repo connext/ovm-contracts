@@ -4,6 +4,7 @@ import { solidity, MockProvider } from "ethereum-waffle";
 import { use } from "chai";
 import { BigNumber, BigNumberish, parseEther } from "ethers/utils";
 import { Wallet } from "ethers";
+import { createMockProvider } from "@eth-optimism/rollup-full-node";
 
 export function mkXpub(prefix: string = "xpub"): string {
   return prefix.padEnd(111, "0");
@@ -22,7 +23,7 @@ export function mkSig(prefix: string = "0x"): string {
 }
 
 // ETH helpers
-export const createProvider = () => new MockProvider();
+export const createProvider = () => createMockProvider();
 export const mineBlock = async (provider: MockProvider) =>
   await provider.send("evm_mine", []);
 export const snapshot = async (provider: MockProvider) =>
