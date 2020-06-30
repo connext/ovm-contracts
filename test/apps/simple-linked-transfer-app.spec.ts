@@ -6,7 +6,11 @@ import { BigNumber, defaultAbiCoder, solidityKeccak256 } from "ethers/utils";
 
 import SimpleLinkedTransferApp from "../../artifacts/SimpleLinkedTransferApp.json";
 
-import { expect, createProvider } from "../utils";
+import { expect, createProvider, OvmProvider } from "../utils";
+const {
+  getWallets,
+  deployContract,
+} = require("@eth-optimism/rollup-full-node");
 
 type CoinTransfer = {
   to: string;
@@ -94,7 +98,7 @@ function createLinkedHash(
 
 describe("SimpleLinkedTransferApp", () => {
   let simpleLinkedTransferApp: Contract;
-  const provider = createProvider();
+  let provider: OvmProvider;
 
   async function computeOutcome(
     state: SimpleLinkedTransferAppState
@@ -115,12 +119,17 @@ describe("SimpleLinkedTransferApp", () => {
   }
 
   before(async () => {
-    const wallet = (await provider.getWallets())[0];
-    simpleLinkedTransferApp = await new ContractFactory(
-      SimpleLinkedTransferApp.abi,
-      SimpleLinkedTransferApp.bytecode,
-      wallet
-    ).deploy();
+    provider = await createProvider();
+    const wallet = (await getWallets(provider))[0];
+    simpleLinkedTransferApp = await deployContract(
+      wallet,
+      SimpleLinkedTransferApp,
+      []
+    );
+  });
+
+  after(async () => {
+    provider.closeOVM();
   });
 
   describe("update state", () => {

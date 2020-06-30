@@ -1,5 +1,5 @@
 /* global before */
-import { Contract, Event, Wallet, ContractFactory } from "ethers";
+import { Contract, Event, Wallet } from "ethers";
 import { TransactionResponse } from "ethers/providers";
 import {
   getAddress,
@@ -12,14 +12,17 @@ import Echo from "../../artifacts/Echo.json";
 import Proxy from "../../artifacts/Proxy.json";
 import ProxyFactory from "../../artifacts/ProxyFactory.json";
 
-import { expect, createProvider } from "../utils";
-import { MockProvider } from "ethereum-waffle";
+import { expect, createProvider, OvmProvider } from "../utils";
+const {
+  getWallets,
+  deployContract,
+} = require("@eth-optimism/rollup-full-node");
 
-describe("ProxyFactory with CREATE2", function () {
+describe.skip("ProxyFactory with CREATE2", function () {
   this.timeout(5000);
-  const provider: MockProvider = createProvider();
 
   let wallet: Wallet;
+  let provider: OvmProvider;
 
   let pf: Contract;
   let echo: Contract;
@@ -45,19 +48,16 @@ describe("ProxyFactory with CREATE2", function () {
     );
   }
 
-  before(async () => {
-    wallet = (await provider.getWallets())[0];
-    pf = await new ContractFactory(
-      ProxyFactory.abi as any,
-      ProxyFactory.bytecode,
-      wallet
-    ).deploy();
+  after(() => {
+    provider.closeOVM();
+  });
 
-    echo = await new ContractFactory(
-      Echo.abi as any,
-      Echo.bytecode,
-      wallet
-    ).deploy();
+  before(async () => {
+    provider = await createProvider();
+    wallet = (await getWallets(provider))[0];
+    pf = await deployContract(wallet, ProxyFactory, []);
+
+    echo = await deployContract(wallet, Echo, []);
   });
 
   describe("createProxy", async () => {

@@ -4,7 +4,11 @@ import { BigNumber, defaultAbiCoder } from "ethers/utils";
 
 import SimpleTwoPartySwapApp from "../../artifacts/SimpleTwoPartySwapApp.json";
 
-import { expect, createProvider } from "../utils";
+import { expect, createProvider, OvmProvider } from "../utils";
+const {
+  getWallets,
+  deployContract,
+} = require("@eth-optimism/rollup-full-node");
 
 type CoinTransfer = {
   to: string;
@@ -48,19 +52,20 @@ const encodeAppState = (
 
 describe("SimpleTwoPartySwapApp", () => {
   let simpleSwapApp: Contract;
-  const provider = createProvider();
+  let provider: OvmProvider;
 
   async function computeOutcome(state: SimpleSwapAppState): Promise<string> {
     return simpleSwapApp.functions.computeOutcome(encodeAppState(state));
   }
 
   before(async () => {
-    const wallet = (await provider.getWallets())[0];
-    simpleSwapApp = await new ContractFactory(
-      SimpleTwoPartySwapApp.abi,
-      SimpleTwoPartySwapApp.bytecode,
-      wallet
-    ).deploy();
+    provider = await createProvider();
+    const wallet = (await getWallets(provider))[0];
+    simpleSwapApp = await deployContract(wallet, SimpleTwoPartySwapApp, []);
+  });
+
+  after(() => {
+    provider.closeOVM();
   });
 
   describe("update state", () => {
