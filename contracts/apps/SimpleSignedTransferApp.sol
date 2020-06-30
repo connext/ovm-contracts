@@ -30,19 +30,35 @@ contract SimpleSignedTransferApp is CounterfactualApp {
     }
 
     // EIP-712 DOMAIN SEPARATOR CONSTANTS
-    bytes32 private constant DOMAIN_TYPE_HASH = keccak256(
-        "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)"
-    );
-    bytes32 private constant RECEIPT_TYPE_HASH = keccak256(
-        "Receipt(bytes32 paymentId,bytes32 data)"
-    );
+    // KNOWN ISSUE: https://hackmd.io/elr0znYORiOMSTtfPJVAaA?view
+    // Solidity def:
+    // bytes32 private constant DOMAIN_TYPE_HASH = keccak256(
+    //     "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)"
+    // );
+    // bytes32 private constant RECEIPT_TYPE_HASH = keccak256(
+    //     "Receipt(bytes32 paymentId,bytes32 data)"
+    // );
 
-    bytes32 private constant DOMAIN_NAME_HASH = keccak256(
-        "Connext Signed Transfer"
-    );
-    bytes32 private constant DOMAIN_VERSION_HASH = keccak256("0");
+    // bytes32 private constant DOMAIN_NAME_HASH = keccak256(
+    //     "Connext Signed Transfer"
+    // );
+    // bytes32 private constant DOMAIN_VERSION_HASH = keccak256("0");
     bytes32
         private constant DOMAIN_SALT = 0xa070ffb1cd7409649bf77822cce74495468e06dbfaef09556838bf188679b9c2;
+
+    // OVM def:
+    bytes32
+        private constant DOMAIN_TYPE_HASH = 0xd87cd6ef79d4e2b95e15ce8abf732db51ec771f1ca2edccf22a46c729ac56472;
+    bytes32
+        private constant RECEIPT_TYPE_HASH = 0x0e822f3ce57ecbdb6dcae76d51d85c8760819ec4c88925ab629d73d7bfbd38eb;
+    bytes32
+        private constant DOMAIN_NAME_HASH = 0xd6dfa1ebf5dfbb8ac25f6f7566ed5db7f58bef9979b3b9b3ac8ab6ffad6f7ad7;
+    bytes32
+        private constant DOMAIN_VERSION_HASH = 0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d;
+
+    // typescript def:
+    // import { hashString } from "@connext/utils";
+    // hashString(val);
 
     function recoverSigner(Action memory action, AppState memory state)
         public
@@ -87,10 +103,10 @@ contract SimpleSignedTransferApp is CounterfactualApp {
         require(!state.finalized, "Cannot take action on finalized state");
 
         // FIXME: OVM having recovery issues
-        // require(
-        //     state.signerAddress == recoverSigner(action, state),
-        //     "Incorrect signer recovered from signature"
-        // );
+        require(
+            state.signerAddress == recoverSigner(action, state),
+            "Incorrect signer recovered from signature"
+        );
 
         state.coinTransfers[1].amount = state.coinTransfers[0].amount;
         state.coinTransfers[0].amount = 0;
