@@ -4,7 +4,10 @@ import { solidity, MockProvider } from "ethereum-waffle";
 import { use } from "chai";
 import { BigNumber, BigNumberish, parseEther } from "ethers/utils";
 import { Wallet } from "ethers";
-import { createMockProvider } from "@eth-optimism/rollup-full-node";
+// TODO: importing gets this error:
+// Could not find a declaration file for module '@eth-optimism/rollup-full-node'
+// import { createMockProvider } from "@eth-optimism/rollup-full-node";
+const { createMockProvider } = require("@eth-optimism/rollup-full-node");
 
 export function mkXpub(prefix: string = "xpub"): string {
   return prefix.padEnd(111, "0");
@@ -23,7 +26,13 @@ export function mkSig(prefix: string = "0x"): string {
 }
 
 // ETH helpers
-export const createProvider = () => createMockProvider();
+export type OvmProvider = MockProvider & { closeOVM: () => void };
+export const createProvider = async (): Promise<OvmProvider> => {
+  const provider = await createMockProvider();
+  // TODO: doesnt work :(
+  // const provider = await fullNode.addHandlerToProvider(new MockProvider());
+  return provider;
+};
 export const mineBlock = async (provider: MockProvider) =>
   await provider.send("evm_mine", []);
 export const snapshot = async (provider: MockProvider) =>

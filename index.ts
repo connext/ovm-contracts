@@ -13,7 +13,7 @@ import * as MinimumViableMultisig from "./artifacts/MinimumViableMultisig.json";
 import * as MultiAssetMultiPartyCoinTransferInterpreter from "./artifacts/MultiAssetMultiPartyCoinTransferInterpreter.json";
 import * as ProxyFactory from "./artifacts/ProxyFactory.json";
 import * as SimpleLinkedTransferApp from "./artifacts/SimpleLinkedTransferApp.json";
-import * as SimpleTransferApp from "./artifacts/SimpleTransferApp.json";
+import * as SimpleSignedTransferApp from "./artifacts/SimpleSignedTransferApp.json";
 import * as SimpleTwoPartySwapApp from "./artifacts/SimpleTwoPartySwapApp.json";
 import * as SingleAssetTwoPartyCoinTransferInterpreter from "./artifacts/SingleAssetTwoPartyCoinTransferInterpreter.json";
 import * as TwoPartyFixedOutcomeInterpreter from "./artifacts/TwoPartyFixedOutcomeInterpreter.json";
@@ -32,7 +32,7 @@ export {
   MultiAssetMultiPartyCoinTransferInterpreter,
   ProxyFactory,
   SimpleLinkedTransferApp,
-  SimpleTransferApp,
+  SimpleSignedTransferApp,
   SimpleTwoPartySwapApp,
   SingleAssetTwoPartyCoinTransferInterpreter,
   TwoPartyFixedOutcomeInterpreter,

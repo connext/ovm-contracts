@@ -3,3 +3,4 @@ dist/
 artifacts/
 cache/
 node_modules/
+.optimism/
