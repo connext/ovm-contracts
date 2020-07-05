@@ -229,6 +229,8 @@ describe("SimpleSignedTransferApp", () => {
       );
     });
 
+    // TODO: should remove the testRecovery function once we figure
+    // out whats going on with decoding :thinking:
     it.only("will correctly recover signer", async () => {
       const action: SimpleSignedTransferAppAction = {
         data,
