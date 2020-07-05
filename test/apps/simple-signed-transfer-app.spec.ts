@@ -1,21 +1,11 @@
 import {
   CoinTransfer,
-  // SimpleSignedTransferAppAction,
-  // SimpleSignedTransferAppActionEncoding,
-  // SimpleSignedTransferAppState,
-  // SimpleSignedTransferAppStateEncoding,
   singleAssetTwoPartyCoinTransferEncoding,
   PrivateKey,
   BigNumber,
 } from "@connext/types";
 import { Contract, constants, utils, Wallet } from "ethers";
-import {
-  getRandomBytes32,
-  getAddressFromPrivateKey,
-  // signReceiptMessage,
-  // getTestEIP712Domain,
-  // hashDomainSeparator,
-} from "@connext/utils";
+import { getRandomBytes32, getAddressFromPrivateKey } from "@connext/utils";
 
 import SimpleSignedTransferApp from "../../artifacts/SimpleSignedTransferApp.json";
 
@@ -50,7 +40,6 @@ const decodeTransfers = (encodedAppState: string): CoinTransfer[] =>
 const decodeAppState = (
   encodedAppState: string
 ): SimpleSignedTransferAppState => {
-  console.log(`decoding`, encodedAppState);
   return defaultAbiCoder.decode(
     [SimpleSignedTransferAppStateEncoding],
     encodedAppState
@@ -62,7 +51,6 @@ const encodeAppState = (
   onlyCoinTransfers: boolean = false
 ): string => {
   if (!onlyCoinTransfers) {
-    console.log(`encoding`, state);
     return defaultAbiCoder.encode(
       [SimpleSignedTransferAppStateEncoding],
       [state]
@@ -178,7 +166,7 @@ describe("SimpleSignedTransferApp", () => {
   });
 
   describe("applyAction", () => {
-    it.only("will redeem a payment with correct signature", async () => {
+    it("will redeem a payment with correct signature", async () => {
       const action: SimpleSignedTransferAppAction = {
         data,
         signature: goodSig,
@@ -187,7 +175,6 @@ describe("SimpleSignedTransferApp", () => {
         encodeAppState(preState),
         encodeAppAction(action)
       );
-      console.log(`successful contract call:`, ret);
       const afterActionState = decodeAppState(ret);
 
       const expectedPostState: SimpleSignedTransferAppState = {
@@ -236,12 +223,26 @@ describe("SimpleSignedTransferApp", () => {
         data,
         signature: goodSig,
       };
-      const recovered = await simpleSignedTransferApp.testRecovery(
-        encodeAppState(preState),
-        encodeAppAction(action)
-      );
-
-      expect(recovered).to.be.eq(preState.signerAddress);
+      const eventData = await new Promise(async (resolve) => {
+        simpleSignedTransferApp.on("Test", (data) => {
+          console.log(`got state updated event`, data);
+          resolve(data);
+        });
+        const expectedData = simpleSignedTransferApp.interface.functions.testRecovery.encode(
+          [encodeAppState(preState), encodeAppAction(action)]
+        );
+        const tx = await simpleSignedTransferApp.testRecovery(
+          encodeAppState(preState),
+          encodeAppAction(action)
+        );
+        console.log(`called testRecovery, tx`, tx);
+        expect(tx.data).to.be.eq(expectedData);
+        console.log(`verified data, waiting for receipt`);
+        const receipt = await tx.wait();
+        console.log(`got receipt`, receipt);
+        expect(receipt).to.be.ok;
+      });
+      expect(eventData).to.be.ok;
     });
 
     // FIXME: OVM having recovery issues
