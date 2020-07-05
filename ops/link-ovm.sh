@@ -2,7 +2,7 @@
 set -e
 
 # The packages needed from ovm
-packages="core-utils,core-db,ovm,rollup-contracts,rollup-core,rollup-dev-tools,rollup-full-node,solc-transpiler"
+packages="core-utils,core-db,optimistic-game-semantics,ovm-truffle-provider-wrapper,state-synchronizer,rollup-contracts,rollup-core,rollup-dev-tools,rollup-full-node,solc-transpiler"
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 project="@eth-optimism"
@@ -25,7 +25,7 @@ git reset --hard origin/master
 
 echo "Building optimism"
 rm -rf yarn.lock
-npm install
+npm install && npm run build
 
 echo "Installed dependencies, linking packages"
 

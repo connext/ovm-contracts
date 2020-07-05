@@ -11,7 +11,7 @@ import * as ERC20 from "./artifacts/ERC20.json";
 import * as IdentityApp from "./artifacts/IdentityApp.json";
 import * as MinimumViableMultisig from "./artifacts/MinimumViableMultisig.json";
 import * as MultiAssetMultiPartyCoinTransferInterpreter from "./artifacts/MultiAssetMultiPartyCoinTransferInterpreter.json";
-import * as ProxyFactory from "./artifacts/ProxyFactory.json";
+// import * as ProxyFactory from "./artifacts/ProxyFactory.json";
 import * as SimpleLinkedTransferApp from "./artifacts/SimpleLinkedTransferApp.json";
 import * as SimpleSignedTransferApp from "./artifacts/SimpleSignedTransferApp.json";
 import * as SimpleTwoPartySwapApp from "./artifacts/SimpleTwoPartySwapApp.json";
@@ -30,7 +30,7 @@ export {
   IdentityApp,
   MinimumViableMultisig,
   MultiAssetMultiPartyCoinTransferInterpreter,
-  ProxyFactory,
+  // ProxyFactory,
   SimpleLinkedTransferApp,
   SimpleSignedTransferApp,
   SimpleTwoPartySwapApp,
