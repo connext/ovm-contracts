@@ -1,9 +1,11 @@
-import { utils, Wallet } from "ethers";
+import { utils } from "ethers";
 import {
   CoinTransfer,
   PrivateKey,
   singleAssetTwoPartyCoinTransferEncoding,
 } from "@connext/types";
+import { ecsign } from "ethereumjs-util";
+import { joinSignature, hexlify } from "ethers/utils";
 
 const { keccak256, toUtf8Bytes, defaultAbiCoder, solidityKeccak256 } = utils;
 // TODO: SimpleSignedTransfer app needs @connext packages ^7.0.0
@@ -86,7 +88,14 @@ export const signReceiptMessage = async (
   domain: EIP712Domain,
   receipt: Receipt,
   privateKey: PrivateKey
-) => new Wallet(privateKey).signMessage(hashReceiptMessage(domain, receipt));
+) => {
+  const hash = hashReceiptMessage(domain, receipt);
+  const { v, r, s } = ecsign(
+    Buffer.from(hash.slice(2), "hex"),
+    Buffer.from(privateKey.slice(2), "hex")
+  );
+  return joinSignature({ v, r: hexlify(r), s: hexlify(s) });
+};
 
 export const getTestEIP712Domain = (chainId: number): EIP712Domain => ({
   name: DOMAIN_NAME,
