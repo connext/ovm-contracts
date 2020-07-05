@@ -1,20 +1,11 @@
-import { utils } from "ethers";
+import { utils, Wallet } from "ethers";
 import {
   CoinTransfer,
   PrivateKey,
   singleAssetTwoPartyCoinTransferEncoding,
 } from "@connext/types";
-import { sign } from "eccrypto-js";
-import { bufferify } from "@connext/utils";
 
-const {
-  keccak256,
-  toUtf8Bytes,
-  defaultAbiCoder,
-  solidityKeccak256,
-  hexlify,
-} = utils;
-
+const { keccak256, toUtf8Bytes, defaultAbiCoder, solidityKeccak256 } = utils;
 // TODO: SimpleSignedTransfer app needs @connext packages ^7.0.0
 // not sure best way to do this, so for now have duplicate fns
 
@@ -95,14 +86,7 @@ export const signReceiptMessage = async (
   domain: EIP712Domain,
   receipt: Receipt,
   privateKey: PrivateKey
-) =>
-  hexlify(
-    await sign(
-      bufferify(privateKey),
-      bufferify(hashReceiptMessage(domain, receipt)),
-      true
-    )
-  );
+) => new Wallet(privateKey).signMessage(hashReceiptMessage(domain, receipt));
 
 export const getTestEIP712Domain = (chainId: number): EIP712Domain => ({
   name: DOMAIN_NAME,

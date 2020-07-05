@@ -56,17 +56,13 @@ contract SimpleSignedTransferApp is CounterfactualApp {
     bytes32
         private constant DOMAIN_VERSION_HASH = 0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d;
 
-    // typescript def:
-    // import { hashString } from "@connext/utils";
-    // hashString(val);
-
     function recoverSigner(Action memory action, AppState memory state)
         public
-        pure
+        view
         returns (address)
     {
         return
-            ECDSA.recover(
+            LibChannelCrypto.recoverAddr(
                 keccak256(
                     abi.encodePacked(
                         "\x19\x01",

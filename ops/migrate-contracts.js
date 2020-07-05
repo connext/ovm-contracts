@@ -8,7 +8,7 @@ const coreContracts = [
   "IdentityApp",
   "MinimumViableMultisig",
   "MultiAssetMultiPartyCoinTransferInterpreter",
-  "ProxyFactory",
+  // "ProxyFactory",
   "SingleAssetTwoPartyCoinTransferInterpreter",
   "TimeLockedPassThrough",
   "TwoPartyFixedOutcomeInterpreter",
@@ -25,7 +25,7 @@ const appContracts = [
   "WithdrawApp",
 ];
 
-const hash = input => eth.utils.keccak256(`0x${input.replace(/^0x/, "")}`);
+const hash = (input) => eth.utils.keccak256(`0x${input.replace(/^0x/, "")}`);
 
 const artifacts = {};
 for (const contract of coreContracts) {
@@ -48,11 +48,11 @@ const botMnemonics = [
 ];
 const ganacheId = 4447;
 const addressBookPath = "./address-book.json";
-const addressBook = JSON.parse(fs.readFileSync(addressBookPath, "utf8") || "{}");
+const addressBook = JSON.parse(
+  fs.readFileSync(addressBookPath, "utf8") || "{}"
+);
 
-const classicProviders = [
-  "https://www.ethercluster.com/etc",
-];
+const classicProviders = ["https://www.ethercluster.com/etc"];
 
 // Global scope vars
 let chainId;
@@ -71,7 +71,7 @@ const getSavedData = (contractName, property) => {
 };
 
 // Write addressBook to disk
-const saveAddressBook = addressBook => {
+const saveAddressBook = (addressBook) => {
   try {
     fs.writeFileSync(addressBookPath, JSON.stringify(addressBook, null, 2));
   } catch (e) {
@@ -88,7 +88,9 @@ const contractIsDeployed = async (name, address, artifacts) => {
   const savedCreationCodeHash = getSavedData(name, "creationCodeHash");
   const creationCodeHash = hash(artifacts.bytecode);
   if (!savedCreationCodeHash || savedCreationCodeHash !== creationCodeHash) {
-    console.log(`creationCodeHash in our address book doen't match ${name} artifacts`);
+    console.log(
+      `creationCodeHash in our address book doen't match ${name} artifacts`
+    );
     console.log(`${savedCreationCodeHash} !== ${creationCodeHash}`);
     return false;
   }
@@ -99,7 +101,9 @@ const contractIsDeployed = async (name, address, artifacts) => {
     return false;
   }
   if (savedRuntimeCodeHash !== runtimeCodeHash) {
-    console.log(`runtimeCodeHash for ${address} does not match what's in our address book`);
+    console.log(
+      `runtimeCodeHash for ${address} does not match what's in our address book`
+    );
     console.log(`${savedRuntimeCodeHash} !== ${runtimeCodeHash}`);
     return false;
   }
@@ -110,11 +114,15 @@ const deployContract = async (name, artifacts, args) => {
   console.log(`\nChecking for valid ${name} contract...`);
   const savedAddress = getSavedData(name, "address");
   if (await contractIsDeployed(name, savedAddress, artifacts)) {
-    console.log(`${name} is up to date, no action required\nAddress: ${savedAddress}`);
+    console.log(
+      `${name} is up to date, no action required\nAddress: ${savedAddress}`
+    );
     return new eth.Contract(savedAddress, artifacts.abi, wallet);
   }
   const factory = eth.ContractFactory.fromSolidity(artifacts);
-  const contract = await factory.connect(wallet).deploy(...args.map(a => a.value));
+  const contract = await factory
+    .connect(wallet)
+    .deploy(...args.map((a) => a.value));
   const txHash = contract.deployTransaction.hash;
   console.log(`Sent transaction to deploy ${name}, txHash: ${txHash}`);
   await wallet.provider.waitForTransaction(txHash);
@@ -124,10 +132,16 @@ const deployContract = async (name, artifacts, args) => {
   const creationCodeHash = hash(artifacts.bytecode);
   // Update address-book w new address + the args we deployed with
   const saveArgs = {};
-  args.forEach(a => (saveArgs[a.name] = a.value));
+  args.forEach((a) => (saveArgs[a.name] = a.value));
   if (!addressBook[chainId]) addressBook[chainId] = {};
   if (!addressBook[chainId][name]) addressBook[chainId][name] = {};
-  addressBook[chainId][name] = { address, creationCodeHash, runtimeCodeHash, txHash, ...saveArgs };
+  addressBook[chainId][name] = {
+    address,
+    creationCodeHash,
+    runtimeCodeHash,
+    txHash,
+    ...saveArgs,
+  };
   saveAddressBook(addressBook);
   return contract;
 };
@@ -145,7 +159,11 @@ const sendGift = async (address, token) => {
     await wallet.provider.waitForTransaction(tx.hash);
     console.log(`Transaction mined! Hash: ${tx.hash}`);
   } else {
-    console.log(`\nAccount ${address} already has ${EtherSymbol} ${formatEther(ethBalance)}`);
+    console.log(
+      `\nAccount ${address} already has ${EtherSymbol} ${formatEther(
+        ethBalance
+      )}`
+    );
   }
   if (token) {
     const tokenBalance = await token.balanceOf(address);
@@ -155,7 +173,9 @@ const sendGift = async (address, token) => {
       await wallet.provider.waitForTransaction(tx.hash);
       console.log(`Transaction mined! Hash: ${tx.hash}`);
     } else {
-      console.log(`\nAccount ${address} already has ${formatEther(tokenBalance)} tokens`);
+      console.log(
+        `\nAccount ${address} already has ${formatEther(tokenBalance)} tokens`
+      );
     }
   }
 };
@@ -164,22 +184,26 @@ const sendGift = async (address, token) => {
 // Begin executing main migration script in async wrapper function
 // First, setup signer & connect to eth provider
 
-(async function() {
+(async function () {
   let provider, balance, nonce, token;
 
   if (!process.env.ETH_PROVIDER) {
-    console.error("Couldn't setup provider: no url found in ETH_PROVIDER env var");
+    console.error(
+      "Couldn't setup provider: no url found in ETH_PROVIDER env var"
+    );
     process.exit(1);
   }
 
   if (!process.env.ETH_MNEMONIC) {
-    console.error("Couldn't setup signer: no mnemonic found in ETH_MNEMONIC env var");
+    console.error(
+      "Couldn't setup signer: no mnemonic found in ETH_MNEMONIC env var"
+    );
     process.exit(1);
   }
 
   provider = new eth.providers.JsonRpcProvider(
     process.env.ETH_PROVIDER,
-    classicProviders.includes(process.env.ETH_PROVIDER) ? "classic" : null,
+    classicProviders.includes(process.env.ETH_PROVIDER) ? "classic" : null
   );
   mnemonic = process.env.ETH_MNEMONIC;
   wallet = eth.Wallet.fromMnemonic(mnemonic).connect(provider); // saved to global scope
@@ -189,12 +213,16 @@ const sendGift = async (address, token) => {
     balance = formatEther(await wallet.getBalance());
     nonce = await wallet.getTransactionCount();
   } catch (e) {
-    console.error(`Couldn't connect to eth provider: ${JSON.stringify(provider, null, 2)}`);
+    console.error(
+      `Couldn't connect to eth provider: ${JSON.stringify(provider, null, 2)}`
+    );
     process.exit(1);
   }
 
   console.log(`\nPreparing to migrate contracts to chain w id: ${chainId}`);
-  console.log(`Deployer Wallet: address=${wallet.address} nonce=${nonce} balance=${balance}`);
+  console.log(
+    `Deployer Wallet: address=${wallet.address} nonce=${nonce} balance=${balance}`
+  );
 
   ////////////////////////////////////////
   // Deploy contracts
@@ -205,7 +233,7 @@ const sendGift = async (address, token) => {
   // if args are provided, only deploy given contracts
   const args = process.argv.slice(2);
   if (args.length > 0) {
-    args.forEach(contractName => {
+    args.forEach((contractName) => {
       if (!knownContracts.includes(contractName)) {
         console.error(`Unknown contract name: ${contractName}`);
         return;
@@ -250,5 +278,9 @@ const sendGift = async (address, token) => {
   console.log("\nAll done!");
   const spent = balance - formatEther(await wallet.getBalance());
   const nTx = (await wallet.getTransactionCount()) - nonce;
-  console.log(`Sent ${nTx} transaction${nTx === 1 ? "" : "s"} & spent ${EtherSymbol} ${spent}`);
+  console.log(
+    `Sent ${nTx} transaction${
+      nTx === 1 ? "" : "s"
+    } & spent ${EtherSymbol} ${spent}`
+  );
 })();

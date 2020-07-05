@@ -110,7 +110,7 @@ contract LibStateChannelApp is LibDispute {
         bytes[] memory signatures,
         bytes32 txHash,
         address[] memory signers
-    ) public pure returns (bool) {
+    ) public view returns (bool) {
         require(
             signers.length == signatures.length,
             "Signers and signatures should be of equal length"

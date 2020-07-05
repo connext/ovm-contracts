@@ -1,4 +1,3 @@
-import { toBN, recoverAddressFromChannelMessage } from "@connext/utils";
 import * as chai from "chai";
 import { solidity, MockProvider } from "ethereum-waffle";
 import { use } from "chai";
@@ -45,8 +44,8 @@ export const moveToBlock = async (
   blockNumber: BigNumberish,
   provider: MockProvider
 ) => {
-  const desired: BigNumber = toBN(blockNumber);
-  const current: BigNumber = toBN(await provider.getBlockNumber());
+  const desired: BigNumber = new BigNumber(blockNumber);
+  const current: BigNumber = new BigNumber(await provider.getBlockNumber());
   if (current.gt(desired)) {
     throw new Error(
       `Already at block ${current.toNumber()}, cannot rewind to ${blockNumber.toString()}`
@@ -58,7 +57,7 @@ export const moveToBlock = async (
   for (const _ of Array(desired.sub(current).toNumber())) {
     await mineBlock(provider);
   }
-  const final: BigNumber = toBN(await provider.getBlockNumber());
+  const final: BigNumber = new BigNumber(await provider.getBlockNumber());
   expect(final).to.be.eq(desired);
 };
 
@@ -107,25 +106,9 @@ export const fund = async (
 };
 
 export function sortByAddress(a: string, b: string) {
-  return toBN(a).lt(toBN(b)) ? -1 : 1;
+  return new BigNumber(a).lt(new BigNumber(b)) ? -1 : 1;
 }
 
 export function sortAddresses(addrs: string[]) {
   return addrs.sort(sortByAddress);
-}
-
-export async function sortSignaturesBySignerAddress(
-  digest: string,
-  signatures: string[]
-): Promise<string[]> {
-  return (
-    await Promise.all(
-      signatures.map(async (sig) => ({
-        sig,
-        addr: await recoverAddressFromChannelMessage(digest, sig),
-      }))
-    )
-  )
-    .sort((a, b) => sortByAddress(a.addr, b.addr))
-    .map((x) => x.sig);
 }
