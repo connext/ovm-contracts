@@ -8,6 +8,7 @@ import {
   PrivateKey,
   BigNumber,
 } from "@connext/types";
+import { Contract, constants, utils, Wallet } from "ethers";
 import {
   getRandomBytes32,
   getAddressFromPrivateKey,
@@ -15,7 +16,6 @@ import {
   // getTestEIP712Domain,
   // hashDomainSeparator,
 } from "@connext/utils";
-import { Contract, constants, utils } from "ethers";
 
 import SimpleSignedTransferApp from "../../artifacts/SimpleSignedTransferApp.json";
 
@@ -49,21 +49,25 @@ const decodeTransfers = (encodedAppState: string): CoinTransfer[] =>
 
 const decodeAppState = (
   encodedAppState: string
-): SimpleSignedTransferAppState =>
-  defaultAbiCoder.decode(
+): SimpleSignedTransferAppState => {
+  console.log(`decoding`, encodedAppState);
+  return defaultAbiCoder.decode(
     [SimpleSignedTransferAppStateEncoding],
     encodedAppState
   )[0];
+};
 
 const encodeAppState = (
   state: SimpleSignedTransferAppState,
   onlyCoinTransfers: boolean = false
 ): string => {
-  if (!onlyCoinTransfers)
+  if (!onlyCoinTransfers) {
+    console.log(`encoding`, state);
     return defaultAbiCoder.encode(
       [SimpleSignedTransferAppStateEncoding],
       [state]
     );
+  }
   return defaultAbiCoder.encode(
     [singleAssetTwoPartyCoinTransferEncoding],
     [state.coinTransfers]
@@ -174,13 +178,16 @@ describe("SimpleSignedTransferApp", () => {
   });
 
   describe("applyAction", () => {
-    it("will redeem a payment with correct signature", async () => {
+    it.only("will redeem a payment with correct signature", async () => {
       const action: SimpleSignedTransferAppAction = {
         data,
         signature: goodSig,
       };
-
-      let ret = await applyAction(preState, action);
+      let ret = await simpleSignedTransferApp.applyAction(
+        encodeAppState(preState),
+        encodeAppAction(action)
+      );
+      console.log(`successful contract call:`, ret);
       const afterActionState = decodeAppState(ret);
 
       const expectedPostState: SimpleSignedTransferAppState = {
@@ -211,7 +218,7 @@ describe("SimpleSignedTransferApp", () => {
     });
 
     // FIXME: OVM having recovery issues
-    it.skip("will revert action with incorrect signature", async () => {
+    it("will revert action with incorrect signature", async () => {
       const action: SimpleSignedTransferAppAction = {
         data,
         signature: badSig,
@@ -222,8 +229,21 @@ describe("SimpleSignedTransferApp", () => {
       );
     });
 
+    it.only("will correctly recover signer", async () => {
+      const action: SimpleSignedTransferAppAction = {
+        data,
+        signature: goodSig,
+      };
+      const recovered = await simpleSignedTransferApp.testRecovery(
+        encodeAppState(preState),
+        encodeAppAction(action)
+      );
+
+      expect(recovered).to.be.eq(preState.signerAddress);
+    });
+
     // FIXME: OVM having recovery issues
-    it.skip("will revert action if already finalized", async () => {
+    it("will revert action if already finalized", async () => {
       const action: SimpleSignedTransferAppAction = {
         data,
         signature: goodSig,

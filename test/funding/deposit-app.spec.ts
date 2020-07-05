@@ -200,7 +200,7 @@ describe("DepositApp", () => {
   });
 
   // FIXME: is the solidity in ovm broken just the way we like?
-  it.skip("Correctly calculates deposit amount for token total withdraw overflow", async () => {
+  it("Correctly calculates deposit amount for token total withdraw overflow", async () => {
     const assetId = erc20.address;
     // setup multisig with correct total withdraw
     await deposit(assetId, MAX_INT.div(4));
@@ -233,7 +233,7 @@ describe("DepositApp", () => {
   });
 
   // FIXME: is the solidity in ovm broken just the way we like?
-  it.skip("Correctly calculates deposit amount for token total withdraw overflow AND expression underflow", async () => {
+  it("Correctly calculates deposit amount for token total withdraw overflow AND expression underflow", async () => {
     const assetId = erc20.address;
     const amount = new BigNumber(10000);
     // setup multisig with correct total withdraw

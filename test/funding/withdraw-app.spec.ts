@@ -8,7 +8,7 @@ import {
   WithdrawAppStateEncoding,
 } from "@connext/types";
 import { ChannelSigner } from "@connext/utils";
-import { Wallet, ContractFactory, Contract } from "ethers";
+import { Wallet, Contract } from "ethers";
 import {
   BigNumber,
   defaultAbiCoder,
@@ -177,7 +177,7 @@ describe("WithdrawApp", async () => {
   });
 
   // FIXME: OVM having recovery issues
-  it.skip("It reverts the action if withdrawer signature is invalid", async () => {
+  it("It reverts the action if withdrawer signature is invalid", async () => {
     let initialState = await createInitialState();
     let action = await createAction();
 
@@ -188,7 +188,7 @@ describe("WithdrawApp", async () => {
   });
 
   // FIXME: OVM having recovery issues
-  it.skip("It reverts the action if counterparty signature is invalid", async () => {
+  it("It reverts the action if counterparty signature is invalid", async () => {
     let initialState = await createInitialState();
     let action = await createAction();
 
