@@ -2,11 +2,9 @@
 
 // import "./Proxy.sol";
 
-
 // /// @title Proxy Factory - Allows to create new proxy contact and execute a message call to the new proxy within one transaction.
 // /// @author Stefan George - <stefan@gnosis.pm>
 // contract ProxyFactory {
-
 //     event ProxyCreation(Proxy proxy);
 
 //     /// @dev Allows to get the address for a new proxy contact created via `createProxyWithNonce`
@@ -19,10 +17,7 @@
 //         address _mastercopy,
 //         bytes calldata initializer,
 //         uint256 saltNonce
-//     )
-//         external
-//         returns (Proxy proxy)
-//     {
+//     ) external returns (Proxy proxy) {
 //         proxy = deployProxyWithNonce(_mastercopy, initializer, saltNonce);
 //         revert(string(abi.encodePacked(proxy)));
 //     }
@@ -38,7 +33,12 @@
 //         if (data.length > 0) {
 //             // solium-disable-next-line security/no-inline-assembly
 //             assembly {
-//               if eq(call(gas, proxy, 0, add(data, 0x20), mload(data), 0, 0), 0) { revert(0, 0) }
+//                 if eq(
+//                     call(gas, proxy, 0, add(data, 0x20), mload(data), 0, 0),
+//                     0
+//                 ) {
+//                     revert(0, 0)
+//                 }
 //             }
 //         }
 //         emit ProxyCreation(proxy);
@@ -62,15 +62,25 @@
 //         address _mastercopy,
 //         bytes memory initializer,
 //         uint256 saltNonce
-//     )
-//         public
-//         returns (Proxy proxy)
-//     {
+//     ) public returns (Proxy proxy) {
 //         proxy = deployProxyWithNonce(_mastercopy, initializer, saltNonce);
 //         if (initializer.length > 0) {
 //             // solium-disable-next-line security/no-inline-assembly
 //             assembly {
-//                 if eq(call(gas, proxy, 0, add(initializer, 0x20), mload(initializer), 0, 0), 0) { revert(0,0) }
+//                 if eq(
+//                     call(
+//                         gas,
+//                         proxy,
+//                         0,
+//                         add(initializer, 0x20),
+//                         mload(initializer),
+//                         0,
+//                         0
+//                     ),
+//                     0
+//                 ) {
+//                     revert(0, 0)
+//                 }
 //             }
 //         }
 //         emit ProxyCreation(proxy);
@@ -85,24 +95,28 @@
 //         address _mastercopy,
 //         bytes memory initializer,
 //         uint256 saltNonce
-//     )
-//         internal
-//         returns (Proxy proxy)
-//     {
+//     ) internal returns (Proxy proxy) {
 //         // If the initializer changes the proxy address should change too. Hashing the initializer data is cheaper than just concatinating it
 //         bytes32 salt = keccak256(
 //             abi.encodePacked(keccak256(initializer), saltNonce)
 //         );
 
 //         bytes memory deploymentData = abi.encodePacked(
-//             type(Proxy).creationCode, uint256(_mastercopy)
+//             type(Proxy).creationCode,
+//             uint256(_mastercopy)
 //         );
 //         // solium-disable-next-line security/no-inline-assembly
 //         assembly {
-//             proxy := create2(0x0, add(0x20, deploymentData), mload(deploymentData), salt)
+//             proxy := create2(
+//                 0x0,
+//                 add(0x20, deploymentData),
+//                 mload(deploymentData),
+//                 salt
+//             )
 //             let codeSize := extcodesize(proxy)
-//             if eq(codeSize, 0) { revert(0, 0) }
+//             if eq(codeSize, 0) {
+//                 revert(0, 0)
+//             }
 //         }
 //     }
-
 // }
