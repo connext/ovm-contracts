@@ -2,15 +2,12 @@ import { getRandomAddress } from "@connext/utils";
 import { Contract, Wallet } from "ethers";
 import { AddressZero, One } from "ethers/constants";
 import { BigNumber, defaultAbiCoder } from "ethers/utils";
+import { MockProvider, deployContract } from 'ethereum-waffle'
 
 import DolphinCoin from "../../artifacts/DolphinCoin.json";
 import MultiAssetMultiPartyCoinTransferInterpreter from "../../artifacts/MultiAssetMultiPartyCoinTransferInterpreter.json";
 
-import { expect, createProvider, OvmProvider } from "../utils";
-const {
-  getWallets,
-  deployContract,
-} = require("@eth-optimism/rollup-full-node");
+import { expect, createProvider } from "../utils";
 
 type CoinTransfer = {
   to: string;
@@ -46,7 +43,7 @@ describe("MultiAssetMultiPartyCoinTransferInterpreter", () => {
   let token1: Contract;
   let token2: Contract;
   let multiAssetMultiPartyCoinTransferInterpreter: Contract;
-  let provider: OvmProvider;
+  let provider: MockProvider;
 
   async function interpretOutcomeAndExecuteEffect(
     state: CoinTransfer[][],
@@ -64,13 +61,9 @@ describe("MultiAssetMultiPartyCoinTransferInterpreter", () => {
     );
   }
 
-  afterEach(() => {
-    provider.closeOVM();
-  });
-
   beforeEach(async () => {
     provider = await createProvider();
-    wallet = getWallets(provider)[0];
+    wallet = provider.getWallets()[0];
     token1 = await deployContract(wallet, DolphinCoin, []);
     console.log(`deployed token1`, token1.address);
     token2 = await deployContract(wallet, DolphinCoin, []);

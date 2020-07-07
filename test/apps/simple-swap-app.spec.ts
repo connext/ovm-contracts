@@ -1,14 +1,11 @@
 /* global before */
 import { Contract, ContractFactory } from "ethers";
 import { BigNumber, defaultAbiCoder } from "ethers/utils";
+import { MockProvider, deployContract } from 'ethereum-waffle'
 
 import SimpleTwoPartySwapApp from "../../artifacts/SimpleTwoPartySwapApp.json";
 
-import { expect, createProvider, OvmProvider } from "../utils";
-const {
-  getWallets,
-  deployContract,
-} = require("@eth-optimism/rollup-full-node");
+import { expect, createProvider } from "../utils";
 
 type CoinTransfer = {
   to: string;
@@ -52,7 +49,7 @@ const encodeAppState = (
 
 describe("SimpleTwoPartySwapApp", () => {
   let simpleSwapApp: Contract;
-  let provider: OvmProvider;
+  let provider: MockProvider;
 
   async function computeOutcome(state: SimpleSwapAppState): Promise<string> {
     return simpleSwapApp.functions.computeOutcome(encodeAppState(state));
@@ -60,12 +57,8 @@ describe("SimpleTwoPartySwapApp", () => {
 
   before(async () => {
     provider = await createProvider();
-    const wallet = (await getWallets(provider))[0];
+    const wallet = provider.getWallets()[0];
     simpleSwapApp = await deployContract(wallet, SimpleTwoPartySwapApp, []);
-  });
-
-  after(() => {
-    provider.closeOVM();
   });
 
   describe("update state", () => {

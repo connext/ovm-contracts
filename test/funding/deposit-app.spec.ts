@@ -7,18 +7,14 @@ import {
 } from "@connext/types";
 import { Wallet, Contract } from "ethers";
 import { BigNumber, defaultAbiCoder } from "ethers/utils";
+import { MockProvider, deployContract } from 'ethereum-waffle'
+import { Zero, AddressZero } from "ethers/constants";
 
 import DepositApp from "../../artifacts/DepositApp.json";
 import DelegateProxy from "../../artifacts/DelegateProxy.json";
 import DolphinCoin from "../../artifacts/DolphinCoin.json";
 
-import { Zero, AddressZero } from "ethers/constants";
-
-import { expect, createProvider, OvmProvider } from "../utils";
-const {
-  getWallets,
-  deployContract,
-} = require("@eth-optimism/rollup-full-node");
+import { expect, createProvider } from "../utils";
 
 const MAX_INT = new BigNumber(2).pow(256).sub(1);
 
@@ -46,7 +42,7 @@ describe("DepositApp", () => {
   let depositApp: Contract;
   let proxy: Contract;
   let erc20: Contract;
-  let provider: OvmProvider;
+  let provider: MockProvider;
 
   const depositorWallet = Wallet.createRandom();
   const counterpartyWallet = Wallet.createRandom();
@@ -54,17 +50,13 @@ describe("DepositApp", () => {
   before(async () => {
     // use max funded wallet, see builder.config.ts
     provider = await createProvider();
-    wallet = (await getWallets(provider))[2];
+    wallet = provider.getWallets()[2];
 
     depositApp = await deployContract(wallet, DepositApp, []);
 
     erc20 = await deployContract(wallet, DolphinCoin, []);
 
     proxy = await deployContract(wallet, DelegateProxy, []);
-  });
-
-  after(() => {
-    provider.closeOVM();
   });
 
   const computeOutcome = async (state: DepositAppState): Promise<string> => {

@@ -9,6 +9,7 @@ import {
 } from "@connext/types";
 import { ChannelSigner } from "@connext/utils";
 import { Wallet, Contract } from "ethers";
+import { Zero, HashZero } from "ethers/constants";
 import {
   BigNumber,
   defaultAbiCoder,
@@ -16,15 +17,11 @@ import {
   randomBytes,
   SigningKey,
 } from "ethers/utils";
+import { MockProvider, deployContract } from 'ethereum-waffle'
 
 import WithdrawApp from "../../artifacts/WithdrawApp.json";
-import { Zero, HashZero } from "ethers/constants";
 
-import { expect, createProvider, OvmProvider } from "../utils";
-const {
-  getWallets,
-  deployContract,
-} = require("@eth-optimism/rollup-full-node");
+import { expect, createProvider } from "../utils";
 
 function mkHash(prefix: string = "0xa"): string {
   return prefix.padEnd(66, "0");
@@ -58,7 +55,7 @@ const encodeAppAction = (state: WithdrawAppAction): string => {
 describe("WithdrawApp", async () => {
   let wallet: Wallet;
   let withdrawApp: Contract;
-  let provider: OvmProvider;
+  let provider: MockProvider;
 
   // test constants
   const withdrawerWallet = Wallet.createRandom();
@@ -70,12 +67,8 @@ describe("WithdrawApp", async () => {
 
   before(async () => {
     provider = await createProvider();
-    wallet = (await getWallets(provider))[2];
+    wallet = provider.getWallets()[2];
     withdrawApp = await deployContract(wallet, WithdrawApp, []);
-  });
-
-  after(async () => {
-    provider.closeOVM();
   });
 
   // helpers
