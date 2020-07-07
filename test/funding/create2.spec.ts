@@ -7,22 +7,19 @@
 //   solidityKeccak256,
 //   solidityPack,
 // } from "ethers/utils";
+// import { MockProvider, deployContract } from 'ethereum-waffle'
 
 // import Echo from "../../artifacts/Echo.json";
 // import Proxy from "../../artifacts/Proxy.json";
 // import ProxyFactory from "../../artifacts/ProxyFactory.json";
 
-// import { expect, createProvider, OvmProvider } from "../utils";
-// const {
-//   getWallets,
-//   deployContract,
-// } = require("@eth-optimism/rollup-full-node");
+// import { expect, createProvider } from "../utils";
 
 // describe.skip("ProxyFactory with CREATE2", function () {
 //   this.timeout(5000);
 
 //   let wallet: Wallet;
-//   let provider: OvmProvider;
+//   let provider: MockProvider;
 
 //   let pf: Contract;
 //   let echo: Contract;
@@ -48,13 +45,9 @@
 //     );
 //   }
 
-//   after(() => {
-//     provider.closeOVM();
-//   });
-
 //   before(async () => {
 //     provider = await createProvider();
-//     wallet = (await getWallets(provider))[0];
+//     wallet = provider.getWallets()[0];
 //     pf = await deployContract(wallet, ProxyFactory, []);
 
 //     echo = await deployContract(wallet, Echo, []);

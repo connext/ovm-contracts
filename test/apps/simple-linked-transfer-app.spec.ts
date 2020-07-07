@@ -3,14 +3,11 @@ import { SolidityValueType } from "@connext/types";
 import { Contract, ContractFactory } from "ethers";
 import { AddressZero, Zero } from "ethers/constants";
 import { BigNumber, defaultAbiCoder, solidityKeccak256 } from "ethers/utils";
+import { MockProvider, deployContract } from 'ethereum-waffle'
 
 import SimpleLinkedTransferApp from "../../artifacts/SimpleLinkedTransferApp.json";
 
-import { expect, createProvider, OvmProvider } from "../utils";
-const {
-  getWallets,
-  deployContract,
-} = require("@eth-optimism/rollup-full-node");
+import { expect, createProvider } from "../utils";
 
 type CoinTransfer = {
   to: string;
@@ -98,7 +95,7 @@ function createLinkedHash(
 
 describe("SimpleLinkedTransferApp", () => {
   let simpleLinkedTransferApp: Contract;
-  let provider: OvmProvider;
+  let provider: MockProvider;
 
   async function computeOutcome(
     state: SimpleLinkedTransferAppState
@@ -120,16 +117,12 @@ describe("SimpleLinkedTransferApp", () => {
 
   before(async () => {
     provider = await createProvider();
-    const wallet = (await getWallets(provider))[0];
+    const wallet = provider.getWallets()[0];
     simpleLinkedTransferApp = await deployContract(
       wallet,
       SimpleLinkedTransferApp,
       []
     );
-  });
-
-  after(async () => {
-    provider.closeOVM();
   });
 
   describe("update state", () => {
