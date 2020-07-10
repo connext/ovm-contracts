@@ -15,6 +15,7 @@ import DelegateProxy from "../../artifacts/DelegateProxy.json";
 import DolphinCoin from "../../artifacts/DolphinCoin.json";
 
 import { expect, createProvider } from "../utils";
+import { delay } from "@connext/utils";
 
 const MAX_INT = new BigNumber(2).pow(256).sub(1);
 
@@ -47,14 +48,16 @@ describe("DepositApp", () => {
   const depositorWallet = Wallet.createRandom();
   const counterpartyWallet = Wallet.createRandom();
 
-  before(async () => {
+  beforeEach(async () => {
     // use max funded wallet, see builder.config.ts
     provider = await createProvider();
     wallet = provider.getWallets()[2];
 
     depositApp = await deployContract(wallet, DepositApp, []);
 
-    erc20 = await deployContract(wallet, DolphinCoin, []);
+    erc20 = (await deployContract(wallet, DolphinCoin, [MAX_INT])).connect(
+      wallet
+    );
 
     proxy = await deployContract(wallet, DelegateProxy, []);
   });
@@ -98,16 +101,21 @@ describe("DepositApp", () => {
 
   const deposit = async (assetId: string, amount: BigNumber): Promise<void> => {
     const preDepositValue = await getMultisigBalance(assetId);
-    if (assetId === AddressZero) {
-      const tx = await wallet.sendTransaction({
-        value: amount,
-        to: proxy.address,
-      });
-      expect(tx.hash).to.exist;
-    } else {
-      const tx = await erc20.functions.transfer(proxy.address, amount);
-      expect(tx.hash).to.exist;
+    let walletBal = await erc20.balanceOf(wallet.address);
+    // console.log(`current bal`, walletBal.toString());
+    // console.log(`deposit amount`, amount.toString());
+    while (walletBal.lt(amount)) {
+      console.log(`insufficient funds for deposit, drip`);
+      try {
+        const tx = await erc20.drip(MAX_INT.div(4));
+        await tx.wait();
+      } catch (e) {}
+      await delay(1000);
+      walletBal = await erc20.balanceOf(wallet.address);
+      console.log(`updated bal`, walletBal.toString());
     }
+    const tx = await erc20.functions.transfer(proxy.address, amount);
+    expect(tx.hash).to.exist;
     expect(await getMultisigBalance(assetId)).to.be.eq(
       preDepositValue.add(amount)
     );
@@ -191,8 +199,7 @@ describe("DepositApp", () => {
     await validateOutcome(outcome, initialState, amount, amount.mul(2));
   });
 
-  // FIXME: make sure waffle accts have sufficient eth/tokens
-  it.skip("Correctly calculates deposit amount for token total withdraw overflow", async () => {
+  it("Correctly calculates deposit amount for token total withdraw overflow", async () => {
     const assetId = erc20.address;
     // setup multisig with correct total withdraw
     await deposit(assetId, MAX_INT.div(4));
@@ -221,11 +228,9 @@ describe("DepositApp", () => {
       MAX_INT.div(4),
       MAX_INT.div(4).sub(1)
     );
-    await withdraw(assetId, MAX_INT.div(4)); // do this so we get funds back for next test
   });
 
-  // FIXME: make sure waffle accts have sufficient eth/tokens
-  it.skip("Correctly calculates deposit amount for token total withdraw overflow AND expression underflow", async () => {
+  it("Correctly calculates deposit amount for token total withdraw overflow AND expression underflow", async () => {
     const assetId = erc20.address;
     const amount = new BigNumber(10000);
     // setup multisig with correct total withdraw
@@ -248,6 +253,5 @@ describe("DepositApp", () => {
 
     const outcome = await computeOutcome(initialState);
     await validateOutcome(outcome, initialState, amount, MAX_INT.div(4));
-    await withdraw(assetId, MAX_INT.div(4)); // do this so we get funds back for next test
   });
 });

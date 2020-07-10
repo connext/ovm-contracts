@@ -22,9 +22,12 @@ export function mkSig(prefix: string = "0x"): string {
 }
 
 // ETH helpers
+const MAX_INT = new BigNumber(2).pow(256).sub(1);
 export const createProvider = async (): Promise<MockProvider> => {
-  let provider = new MockProvider();
-  if (process.env.MODE === 'OVM') {
+  let provider = new MockProvider({
+    default_balance_ether: MAX_INT.div(2).toString() as any,
+  });
+  if (process.env.MODE === "OVM") {
     provider = await addHandlerToProvider(provider);
   }
   return provider;

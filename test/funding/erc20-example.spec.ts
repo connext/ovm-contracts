@@ -1,11 +1,11 @@
 /* global before */
 import { Contract, Wallet } from "ethers";
 import { bigNumberify } from "ethers/utils";
-import { MockProvider, deployContract } from 'ethereum-waffle'
+import { MockProvider, deployContract } from "ethereum-waffle";
 
 import DolphinCoin from "../../artifacts/DolphinCoin.json";
 
-import { expect, createProvider,} from "../utils";
+import { expect, createProvider } from "../utils";
 
 // parameters to use for our test coin
 const DOLPHINCOIN_SUPPLY = bigNumberify(10).pow(18).mul(10000);
@@ -18,9 +18,8 @@ describe("DolphinCoin (ERC20) can be created", () => {
   before(async () => {
     provider = await createProvider();
     wallet = provider.getWallets()[0];
-    erc20 = await deployContract(wallet, DolphinCoin, []);
+    erc20 = await deployContract(wallet, DolphinCoin, [DOLPHINCOIN_SUPPLY]);
   });
-
 
   it("Initial supply for deployer is DOLPHINCOIN_SUPPLY", async () => {
     expect(await erc20.functions.balanceOf(wallet.address)).to.be.eq(

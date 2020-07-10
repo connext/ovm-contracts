@@ -1,7 +1,7 @@
 import { getRandomAddress } from "@connext/utils";
 import { Contract, Wallet } from "ethers";
 import { AddressZero, One } from "ethers/constants";
-import { BigNumber, defaultAbiCoder } from "ethers/utils";
+import { BigNumber, defaultAbiCoder, bigNumberify } from "ethers/utils";
 import { MockProvider, deployContract } from "ethereum-waffle";
 
 import DolphinCoin from "../../artifacts/DolphinCoin.json";
@@ -62,10 +62,11 @@ describe("MultiAssetMultiPartyCoinTransferInterpreter", () => {
   }
 
   beforeEach(async () => {
+    const DOLPHINCOIN_SUPPLY = bigNumberify(10).pow(18).mul(10000);
     provider = await createProvider();
     wallet = provider.getWallets()[0];
-    token1 = await deployContract(wallet, DolphinCoin, []);
-    token2 = await deployContract(wallet, DolphinCoin, []);
+    token1 = await deployContract(wallet, DolphinCoin, [DOLPHINCOIN_SUPPLY]);
+    token2 = await deployContract(wallet, DolphinCoin, [DOLPHINCOIN_SUPPLY]);
 
     multiAssetMultiPartyCoinTransferInterpreter = await deployContract(
       wallet,
