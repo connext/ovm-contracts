@@ -66,7 +66,7 @@ function encodeAppAction(state: SimpleSignedTransferAppAction): string {
   );
 }
 
-describe.skip("SimpleSignedTransferApp", () => {
+describe("SimpleSignedTransferApp", () => {
   let privateKey: PrivateKey;
   let signerAddress: string;
   let data: string;
@@ -200,8 +200,11 @@ describe.skip("SimpleSignedTransferApp", () => {
         signature: badSig,
       };
 
+      // NOTE: on evm fails with:
+      // Incorrect signer recovered from signature
       await expect(applyAction(preState, action)).revertedWith(
-        "revert ECDSA: invalid signature length"
+        // "revert ECDSA: invalid signature length"
+        "Incorrect signer recovered from signature"
       );
     });
 
