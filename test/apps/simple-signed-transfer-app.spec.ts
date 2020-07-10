@@ -66,7 +66,7 @@ function encodeAppAction(state: SimpleSignedTransferAppAction): string {
   );
 }
 
-describe("SimpleSignedTransferApp", () => {
+describe.skip("SimpleSignedTransferApp", () => {
   let privateKey: PrivateKey;
   let signerAddress: string;
   let data: string;

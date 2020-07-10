@@ -2,7 +2,7 @@ import { getRandomAddress } from "@connext/utils";
 import { Contract, Wallet } from "ethers";
 import { AddressZero, One } from "ethers/constants";
 import { BigNumber, defaultAbiCoder } from "ethers/utils";
-import { MockProvider, deployContract } from 'ethereum-waffle'
+import { MockProvider, deployContract } from "ethereum-waffle";
 
 import DolphinCoin from "../../artifacts/DolphinCoin.json";
 import MultiAssetMultiPartyCoinTransferInterpreter from "../../artifacts/MultiAssetMultiPartyCoinTransferInterpreter.json";
@@ -65,18 +65,12 @@ describe("MultiAssetMultiPartyCoinTransferInterpreter", () => {
     provider = await createProvider();
     wallet = provider.getWallets()[0];
     token1 = await deployContract(wallet, DolphinCoin, []);
-    console.log(`deployed token1`, token1.address);
     token2 = await deployContract(wallet, DolphinCoin, []);
-    console.log(`deployed token2`, token1.address);
 
     multiAssetMultiPartyCoinTransferInterpreter = await deployContract(
       wallet,
       MultiAssetMultiPartyCoinTransferInterpreter,
       []
-    );
-    console.log(
-      `deployed interpreter`,
-      multiAssetMultiPartyCoinTransferInterpreter.address
     );
 
     // fund interpreter with ERC20 tokenAddresses
@@ -84,14 +78,12 @@ describe("MultiAssetMultiPartyCoinTransferInterpreter", () => {
       multiAssetMultiPartyCoinTransferInterpreter.address,
       new BigNumber(100)
     );
-    console.log(`funded interpreter with token1`);
 
     // fund interpreter with ERC20 tokenAddresses
     await token2.transfer(
       multiAssetMultiPartyCoinTransferInterpreter.address,
       new BigNumber(100)
     );
-    console.log(`funded interpreter with token2`);
   });
 
   it("Can distribute ERC20 coins correctly for one person", async () => {

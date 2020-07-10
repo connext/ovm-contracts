@@ -17,7 +17,7 @@ import {
   randomBytes,
   SigningKey,
 } from "ethers/utils";
-import { MockProvider, deployContract } from 'ethereum-waffle'
+import { MockProvider, deployContract } from "ethereum-waffle";
 
 import WithdrawApp from "../../artifacts/WithdrawApp.json";
 
@@ -166,7 +166,7 @@ describe("WithdrawApp", async () => {
     } catch (e) {
       err = e;
     }
-    expect(err.message).to.include("Internal error");
+    expect(err.message).to.include("cannot take action on a finalized state");
   });
 
   // FIXME: OVM having recovery issues
