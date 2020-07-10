@@ -10,8 +10,8 @@ library LibChannelCrypto {
         returns (address)
     {
         bytes32 digest = toChannelSignedMessage(hash);
-        // return ECDSA.recover(digest, signature);
-        return recoverAddr(digest, signature);
+        return ECDSA.recover(digest, signature);
+        // return recoverAddr(digest, signature);
     }
 
     function toChannelSignedMessage(bytes32 hash)
@@ -25,7 +25,7 @@ library LibChannelCrypto {
             keccak256(abi.encodePacked("\x15Indra Signed Message:\n32", hash));
     }
 
-    function recoverAddr(bytes32 msgHash, bytes memory signature)
+    function recoverAddr(bytes32 digest, bytes memory signature)
         internal
         view
         returns (address)
@@ -33,7 +33,6 @@ library LibChannelCrypto {
         // return ecrecover(msgHash, v, r, s);
 
         // Transform sig string into v, r, s format
-        bytes32 digest = msgHash;
         bytes32 r;
         bytes32 s;
         uint8 v;

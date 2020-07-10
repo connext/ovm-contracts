@@ -24,10 +24,6 @@ contract SimpleSignedTransferApp is CounterfactualApp {
         bool finalized;
     }
 
-    event StateUpdated(AppState updated);
-
-    event Test(bytes encoded);
-
     struct Action {
         bytes32 data;
         bytes signature;
@@ -56,7 +52,7 @@ contract SimpleSignedTransferApp is CounterfactualApp {
         returns (address)
     {
         return
-            LibChannelCrypto.recoverAddr(
+            ECDSA.recover(
                 keccak256(
                     abi.encodePacked(
                         "\x19\x01",
@@ -101,27 +97,6 @@ contract SimpleSignedTransferApp is CounterfactualApp {
         state.coinTransfers[0].amount = 0;
         state.finalized = true;
 
-        return abi.encode(state);
-    }
-
-    function testRecovery(
-        bytes calldata encodedState,
-        bytes calldata encodedAction
-    ) external returns (bytes memory) {
-        AppState memory state = abi.decode(encodedState, (AppState));
-        Action memory action = abi.decode(encodedAction, (Action));
-
-        require(!state.finalized, "Cannot take action on finalized state");
-
-        require(
-            state.signerAddress == recoverSigner(action, state),
-            "Incorrect signer recovered from signature"
-        );
-
-        state.coinTransfers[1].amount = state.coinTransfers[0].amount;
-        state.coinTransfers[0].amount = 0;
-        state.finalized = true;
-        emit Test(encodedState);
         return abi.encode(state);
     }
 

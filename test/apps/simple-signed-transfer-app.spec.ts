@@ -6,7 +6,7 @@ import {
 } from "@connext/types";
 import { Contract, constants, utils, Wallet } from "ethers";
 import { getRandomBytes32, getAddressFromPrivateKey } from "@connext/utils";
-import { MockProvider, deployContract } from 'ethereum-waffle'
+import { MockProvider, deployContract } from "ethereum-waffle";
 
 import SimpleSignedTransferApp from "../../artifacts/SimpleSignedTransferApp.json";
 
@@ -158,16 +158,13 @@ describe("SimpleSignedTransferApp", () => {
     };
   });
 
-  describe.skip("applyAction", () => {
+  describe("applyAction", () => {
     it("will redeem a payment with correct signature", async () => {
       const action: SimpleSignedTransferAppAction = {
         data,
         signature: goodSig,
       };
-      let ret = await simpleSignedTransferApp.applyAction(
-        encodeAppState(preState),
-        encodeAppAction(action)
-      );
+      let ret = await applyAction(preState, action);
       const afterActionState = decodeAppState(ret);
 
       const expectedPostState: SimpleSignedTransferAppState = {
@@ -197,7 +194,6 @@ describe("SimpleSignedTransferApp", () => {
       validateOutcome(ret, expectedPostState);
     });
 
-    // FIXME: OVM having recovery issues
     it("will revert action with incorrect signature", async () => {
       const action: SimpleSignedTransferAppAction = {
         data,
@@ -209,36 +205,6 @@ describe("SimpleSignedTransferApp", () => {
       );
     });
 
-    // TODO: should remove the testRecovery function once we figure
-    // out whats going on with decoding :thinking:
-    it("will correctly recover signer", async () => {
-      const action: SimpleSignedTransferAppAction = {
-        data,
-        signature: goodSig,
-      };
-      const eventData = await new Promise(async (resolve) => {
-        simpleSignedTransferApp.on("Test", (data) => {
-          console.log(`got state updated event`, data);
-          resolve(data);
-        });
-        const expectedData = simpleSignedTransferApp.interface.functions.testRecovery.encode(
-          [encodeAppState(preState), encodeAppAction(action)]
-        );
-        const tx = await simpleSignedTransferApp.testRecovery(
-          encodeAppState(preState),
-          encodeAppAction(action)
-        );
-        console.log(`called testRecovery, tx`, tx);
-        expect(tx.data).to.be.eq(expectedData);
-        console.log(`verified data, waiting for receipt`);
-        const receipt = await tx.wait();
-        console.log(`got receipt`, receipt);
-        expect(receipt).to.be.ok;
-      });
-      expect(eventData).to.be.ok;
-    });
-
-    // FIXME: OVM having recovery issues
     it("will revert action if already finalized", async () => {
       const action: SimpleSignedTransferAppAction = {
         data,
