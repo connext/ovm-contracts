@@ -10,8 +10,8 @@ library LibChannelCrypto {
         returns (address)
     {
         bytes32 digest = toChannelSignedMessage(hash);
-        return ECDSA.recover(digest, signature);
-        // return recoverAddr(digest, signature);
+        // return ECDSA.recover(digest, signature);
+        return recoverAddr(digest, signature);
     }
 
     function toChannelSignedMessage(bytes32 hash)
@@ -28,48 +28,35 @@ library LibChannelCrypto {
     function recoverAddr(bytes32 digest, bytes memory signature)
         internal
         view
-        returns (address)
+        returns (address o)
     {
-        // return ecrecover(msgHash, v, r, s);
-
-        // Transform sig string into v, r, s format
+        // Divide the signature in r, s and v variables
         bytes32 r;
         bytes32 s;
         uint8 v;
 
-        if (signature.length != 65) {
-            return address(0x0);
+        // ecrecover takes the signature parameters, and the only way to get them
+        // currently is to use assembly.
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            r := mload(add(signature, 0x20))
+            s := mload(add(signature, 0x40))
+            v := byte(0, mload(add(signature, 0x60)))
         }
 
         assembly {
-            r := mload(add(signature, 32))
-            s := mload(add(signature, 64))
-            v := and(mload(add(signature, 65)), 255)
-        }
-
-        if (v < 27) {
-            v += 27;
-        }
-
-        if (v != 27 && v != 28) {
-            return address(0x0);
-        }
-
-        assembly {
-            let pointer := mload(0x40)
-
-            mstore(pointer, digest)
-            mstore(add(pointer, 0x20), v)
-            mstore(add(pointer, 0x40), r)
-            mstore(add(pointer, 0x60), s)
-
-            if iszero(staticcall(not(0), 0x01, pointer, 0x80, pointer, 0x20)) {
+            // define pointer
+            let p := mload(0x40)
+            // store data assembly-favouring ways
+            mstore(p, digest)
+            mstore(add(p, 0x20), v)
+            mstore(add(p, 0x40), r)
+            mstore(add(p, 0x60), s)
+            if iszero(staticcall(sub(gas, 2000), 0x01, p, 0x80, p, 0x20)) {
                 revert(0, 0)
             }
-
-            let size := returndatasize
-            returndatacopy(pointer, 0, size)
-            return(pointer, size)
+            // data
+            o := mload(p)
         }
     }
 }

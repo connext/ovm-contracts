@@ -54,6 +54,7 @@
     "@types/sinon-chai": "3.2.4",
     "chai": "4.2.0",
     "chai-subset": "1.6.0",
+    "ethereumjs-util": "^7.0.3",
     "ethlint": "1.2.5",
     "event-target-shim": "5.0.1",
     "mocha": "7.1.1",
