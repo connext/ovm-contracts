@@ -12,6 +12,7 @@ import { BigNumber, Contract, ContractFactory, constants, utils } from "ethers";
 import { SimpleLinkedTransferApp } from "../../artifacts";
 
 import { expect, createProvider } from "../utils";
+import { deployContract } from "ethereum-waffle";
 
 const { HashZero, Zero } = constants;
 const { defaultAbiCoder, soliditySha256 } = utils;
@@ -138,14 +139,14 @@ describe("SimpleLinkedTransferApp", () => {
     expect(post.coinTransfers[1].amount).to.eq(Zero);
   };
 
-  before(async () => {
+  beforeEach(async () => {
     provider = await createProvider();
-    const wallet = (await provider.getWallets())[0];
-    simpleLinkedTransferApp = await new ContractFactory(
-      SimpleLinkedTransferApp.abi,
-      SimpleLinkedTransferApp.bytecode,
-      wallet
-    ).deploy();
+    const wallet = provider.getWallets()[0];
+    simpleLinkedTransferApp = await deployContract(
+      wallet,
+      SimpleLinkedTransferApp,
+      []
+    );
   });
 
   it("can redeem a payment with correct hash", async () => {

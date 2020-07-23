@@ -87,12 +87,6 @@ describe("MultiAssetMultiPartyCoinTransferInterpreter", () => {
       []
     );
 
-    // fund interpreter with ETH
-    await wallet.sendTransaction({
-      to: multiAssetMultiPartyCoinTransferInterpreter.address,
-      value: BigNumber.from(100),
-    });
-
     // fund interpreter with ERC20 tokens
     await token1.transfer(
       multiAssetMultiPartyCoinTransferInterpreter.address,
