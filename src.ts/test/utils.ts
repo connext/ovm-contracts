@@ -1,4 +1,4 @@
-import { BigNumber, BigNumberish } from "@connext/types";
+import { BigNumber, BigNumberish, JsonRpcProvider } from "@connext/types";
 import { toBN } from "@connext/utils";
 import * as chai from "chai";
 import { solidity, MockProvider } from "ethereum-waffle";
@@ -33,14 +33,20 @@ const accounts = pks.map((secretKey) => {
   return { balance: MAX_INT.div(2).toString(), secretKey };
 });
 export const createProvider = async (): Promise<MockProvider> => {
-  let provider = new MockProvider({
+  const mockProvider = new MockProvider({
     ganacheOptions: {
       accounts,
     },
   });
-  if (process.env.MODE === "OVM") {
-    provider = await addHandlerToProvider(provider);
+  if (process.env.MODE !== "OVM") {
+    return mockProvider;
   }
+  // Hack to get around ethers v5 provider issues with networkID
+  // switching
+  const provider = await addHandlerToProvider(
+    new JsonRpcProvider("http://localhost:8545", "any")
+  );
+  provider.getWallets = mockProvider.getWallets;
   return provider;
 };
 export const mineBlock = async (provider: MockProvider) =>
