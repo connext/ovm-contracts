@@ -8,11 +8,24 @@ import { getProvider } from "../utils";
 
 const initialSupply = utils.parseEther("100000000");
 
-const newToken = async (wallet: Wallet, addressBookPath: string, force: boolean) => {
-  const chainId = process?.env?.REAL_CHAIN_ID || (await wallet.provider.getNetwork()).chainId;
+const newToken = async (
+  wallet: Wallet,
+  addressBookPath: string,
+  force: boolean
+) => {
+  const chainId =
+    process?.env?.REAL_CHAIN_ID || (await wallet.provider.getNetwork()).chainId;
   const addressBook = getAddressBook(addressBookPath, chainId.toString());
   const savedAddress = addressBook.getEntry("Token").address;
-  if (force || !(await isContractDeployed("Token", savedAddress, addressBook, wallet.provider))) {
+  if (
+    force ||
+    !(await isContractDeployed(
+      "Token",
+      savedAddress,
+      addressBook,
+      wallet.provider
+    ))
+  ) {
     console.log(`Preparing to deploy new token to chain w id: ${chainId}\n`);
     const constructorArgs = [
       { name: "symbol", value: "CXT" },
@@ -24,11 +37,15 @@ const newToken = async (wallet: Wallet, addressBookPath: string, force: boolean)
       "Token",
       constructorArgs,
       wallet,
-      addressBook,
+      addressBook
     );
     console.log(`Success!`);
     await token.ownerMint(wallet.address, initialSupply);
-    console.log(`Minted ${utils.formatEther(initialSupply)} tokens & gave them all to ${wallet.address}`);
+    console.log(
+      `Minted ${utils.formatEther(initialSupply)} tokens & gave them all to ${
+        wallet.address
+      }`
+    );
   } else {
     console.log(`Token is up to date, no action required`);
     console.log(`Address: ${savedAddress}`);
@@ -49,7 +66,7 @@ export const newTokenCommand = {
     await newToken(
       Wallet.fromMnemonic(argv.mnemonic).connect(getProvider(argv.ethProvider)),
       argv.addressBook,
-      argv.force,
+      argv.force
     );
   },
 };

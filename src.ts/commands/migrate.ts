@@ -14,36 +14,45 @@ export const coreContracts = [
   "ChallengeRegistry",
   "ConditionalTransactionDelegateTarget",
   "DepositApp",
-  "GraphSignedTransferApp",
-  "HashLockTransferApp",
   "IdentityApp",
   "MinimumViableMultisig",
   "MultiAssetMultiPartyCoinTransferInterpreter",
-  "ProxyFactory",
   "SimpleLinkedTransferApp",
   "SimpleSignedTransferApp",
   "SimpleTwoPartySwapApp",
   "SingleAssetTwoPartyCoinTransferInterpreter",
-  "TimeLockedPassThrough",
   "TwoPartyFixedOutcomeInterpreter",
   "WithdrawApp",
   "WithdrawInterpreter",
 ];
 
-export const migrate = async (wallet: Wallet, addressBookPath: string): Promise<void> => {
+export const migrate = async (
+  wallet: Wallet,
+  addressBookPath: string
+): Promise<void> => {
   ////////////////////////////////////////
   // Environment Setup
 
-  const chainId = process?.env?.REAL_CHAIN_ID || (await wallet.provider.getNetwork()).chainId;
+  const chainId =
+    process?.env?.REAL_CHAIN_ID || (await wallet.provider.getNetwork()).chainId;
   const balance = await wallet.getBalance();
   const nonce = await wallet.getTransactionCount();
-  const providerUrl = (wallet.provider as providers.JsonRpcProvider).connection.url;
+  const providerUrl = (wallet.provider as providers.JsonRpcProvider).connection
+    .url;
 
-  console.log(`\nPreparing to migrate contracts to provider ${providerUrl} w chainId: ${chainId}`);
-  console.log(`Deployer address=${wallet.address} nonce=${nonce} balance=${formatEther(balance)}\n`);
+  console.log(
+    `\nPreparing to migrate contracts to provider ${providerUrl} w chainId: ${chainId}`
+  );
+  console.log(
+    `Deployer address=${wallet.address} nonce=${nonce} balance=${formatEther(
+      balance
+    )}\n`
+  );
 
   if (balance.eq(Zero)) {
-    throw new Error(`Account ${wallet.address} has zero balance on chain ${chainId}, aborting contract migration`);
+    throw new Error(
+      `Account ${wallet.address} has zero balance on chain ${chainId}, aborting contract migration`
+    );
   }
 
   const addressBook = getAddressBook(addressBookPath, chainId.toString());
@@ -55,7 +64,12 @@ export const migrate = async (wallet: Wallet, addressBookPath: string): Promise<
     const savedAddress = addressBook.getEntry(name)["address"];
     if (
       savedAddress &&
-      (await isContractDeployed(name, savedAddress, addressBook, wallet.provider))
+      (await isContractDeployed(
+        name,
+        savedAddress,
+        addressBook,
+        wallet.provider
+      ))
     ) {
       console.log(`${name} is up to date, no action required`);
       console.log(`Address: ${savedAddress}\n`);
@@ -70,7 +84,11 @@ export const migrate = async (wallet: Wallet, addressBookPath: string): Promise<
   console.log("All done!");
   const spent = formatEther(balance.sub(await wallet.getBalance()));
   const nTx = (await wallet.getTransactionCount()) - nonce;
-  console.log(`Sent ${nTx} transaction${nTx === 1 ? "" : "s"} & spent ${EtherSymbol} ${spent}`);
+  console.log(
+    `Sent ${nTx} transaction${
+      nTx === 1 ? "" : "s"
+    } & spent ${EtherSymbol} ${spent}`
+  );
 };
 
 export const migrateCommand = {
@@ -85,7 +103,7 @@ export const migrateCommand = {
   handler: async (argv: { [key: string]: any } & Argv["argv"]) => {
     await migrate(
       Wallet.fromMnemonic(argv.mnemonic).connect(getProvider(argv.ethProvider)),
-      argv.addressBook,
+      argv.addressBook
     );
   },
 };

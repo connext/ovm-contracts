@@ -13,7 +13,7 @@ export const fund = async (
   sender: Wallet,
   recipient: Address,
   amount: DecString,
-  tokenAddress?: Address,
+  tokenAddress?: Address
 ): Promise<void> => {
   const fundAttempt = async () => {
     if (tokenAddress && tokenAddress !== AddressZero) {
@@ -21,23 +21,33 @@ export const fund = async (
       const tx = await token.transfer(recipient, parseEther(amount));
       console.log(`Sending ${amount} tokens to ${recipient} via tx ${tx.hash}`);
       await sender.provider.waitForTransaction(tx.hash);
-      const recipientBal = `${formatEther(await token.balanceOf(recipient))} tokens`;
-      const senderBal = `${formatEther(await token.balanceOf(sender.address))} tokens`;
-      console.log(`Tx mined! New balances: recipient ${recipientBal} | sender ${senderBal}`);
+      const recipientBal = `${formatEther(
+        await token.balanceOf(recipient)
+      )} tokens`;
+      const senderBal = `${formatEther(
+        await token.balanceOf(sender.address)
+      )} tokens`;
+      console.log(
+        `Tx mined! New balances: recipient ${recipientBal} | sender ${senderBal}`
+      );
     } else {
       const tx = await sender.sendTransaction({
         to: recipient,
         value: parseEther(amount),
       });
-      console.log(`Sending ${EtherSymbol} ${amount} to ${recipient} via tx: ${tx.hash}`);
+      console.log(
+        `Sending ${EtherSymbol} ${amount} to ${recipient} via tx: ${tx.hash}`
+      );
       await sender.provider.waitForTransaction(tx.hash!);
       const recipientBal = `${EtherSymbol} ${formatEther(
-        await sender.provider.getBalance(recipient),
+        await sender.provider.getBalance(recipient)
       )}`;
       const senderBal = `${EtherSymbol} ${formatEther(
-        await sender.provider.getBalance(sender.address),
+        await sender.provider.getBalance(sender.address)
       )}`;
-      console.log(`Tx mined! New balances: recipient ${recipientBal} | sender ${senderBal}`);
+      console.log(
+        `Tx mined! New balances: recipient ${recipientBal} | sender ${senderBal}`
+      );
     }
   };
 
@@ -67,10 +77,12 @@ export const fundCommand = {
   },
   handler: async (argv: { [key: string]: any } & Argv["argv"]) => {
     await fund(
-      Wallet.fromMnemonic(argv.fromMnemonic).connect(getProvider(argv.ethProvider)),
+      Wallet.fromMnemonic(argv.fromMnemonic).connect(
+        getProvider(argv.ethProvider)
+      ),
       argv.toAddress,
       argv.amount,
-      argv.tokenAddress,
+      argv.tokenAddress
     );
   },
 };

@@ -4,7 +4,9 @@ import { providers } from "ethers";
 import { cliOpts } from "../constants";
 import { getProvider } from "../utils";
 
-export const snapshot = async (ethProvider: providers.JsonRpcProvider): Promise<void> => {
+export const snapshot = async (
+  ethProvider: providers.JsonRpcProvider
+): Promise<void> => {
   try {
     const snapshotId = await ethProvider.send("evm_snapshot", []);
     console.log(`Took an EVM snapshot, id: ${snapshotId}`);

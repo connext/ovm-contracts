@@ -8,9 +8,10 @@ import { getProvider } from "../utils";
 const useToken = async (
   ethProvider: providers.JsonRpcProvider,
   addressBookPath: string,
-  tokenAddress: string,
+  tokenAddress: string
 ) => {
-  const chainId = process?.env?.REAL_CHAIN_ID || (await ethProvider.getNetwork()).chainId;
+  const chainId =
+    process?.env?.REAL_CHAIN_ID || (await ethProvider.getNetwork()).chainId;
   const addressBook = getAddressBook(addressBookPath, chainId.toString());
   addressBook.setEntry("Token", { address: tokenAddress });
 };
@@ -26,6 +27,10 @@ export const useTokenCommand = {
       .demandOption(["t"]);
   },
   handler: async (argv: { [key: string]: any } & Argv["argv"]) => {
-    await useToken(getProvider(argv.ethProvider), argv.addressBook, argv.tokenAddress);
+    await useToken(
+      getProvider(argv.ethProvider),
+      argv.addressBook,
+      argv.tokenAddress
+    );
   },
 };
