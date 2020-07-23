@@ -1,20 +1,22 @@
 #!/bin/bash
 set -e
 
-echo "Contract migration entrypoint activated"
+cwd="`pwd`"
 
-if [[ -d "modules/contracts" ]]
-then cd modules/contracts
-fi
+address_book="${ADDRESS_BOOK:-$cwd/address-book.json}"
 
-address_book="${ADDRESS_BOOK:-/data/address-book.json}"
-
-eth_provider="${ETH_PROVIDER:-http://172.17.0.1:8545}"
+eth_provider="${ETH_PROVIDER:-http://localhost:8545}"
 
 mnemonic="${MNEMONIC:-candy maple cake sugar pudding cream honey rich smooth crumble sweet treat}"
 
-mkdir -p $data_dir /data /tmpfs
-touch $address_book
+if [[ -z "$address_book" ]]
+then touch $address_book
+fi
+
+echo "Contract migration entrypoint activated with:"
+echo "    - address_book:" "$address_book"
+echo "    - eth_provider:" "$eth_provider"
+echo "    - mnemonic:" "$mnemonic"
 
 echo "Deploying contracts.."
 node dist/src.ts/cli.js migrate \
