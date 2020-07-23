@@ -49,7 +49,8 @@ export const migrate = async (
     )}\n`
   );
 
-  if (balance.eq(Zero)) {
+  // No native ETH in ovm
+  if (balance.eq(Zero) && chainId !== 108) {
     throw new Error(
       `Account ${wallet.address} has zero balance on chain ${chainId}, aborting contract migration`
     );
