@@ -20,7 +20,7 @@ import { BigNumber, Contract, ContractFactory, constants, utils } from "ethers";
 import { SimpleSignedTransferApp } from "../../artifacts";
 
 import { expect, createProvider } from "../utils";
-import { MockProvider } from "ethereum-waffle";
+import { MockProvider, deployContract } from "ethereum-waffle";
 
 const { HashZero, Zero } = constants;
 const { defaultAbiCoder } = utils;
@@ -114,12 +114,12 @@ describe("SimpleSignedTransferApp", () => {
 
   beforeEach(async () => {
     provider = await createProvider();
-    const wallet = provider.getWallets()[0];
-    simpleSignedTransferApp = await new ContractFactory(
-      SimpleSignedTransferApp.abi,
-      SimpleSignedTransferApp.bytecode,
-      wallet
-    ).deploy();
+    const [wallet] = provider.getWallets();
+    simpleSignedTransferApp = await deployContract(
+      wallet,
+      SimpleSignedTransferApp,
+      []
+    );
 
     privateKey = wallet.privateKey;
     signerAddress = getAddressFromPrivateKey(privateKey);
@@ -237,7 +237,7 @@ describe("SimpleSignedTransferApp", () => {
       };
 
       await expect(applyAction(preState, action)).revertedWith(
-        "revert ECDSA: invalid signature length"
+        "Incorrect signer recovered from signature"
       );
     });
 

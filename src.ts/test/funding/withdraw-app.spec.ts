@@ -8,19 +8,12 @@ import {
   WithdrawAppStateEncoding,
 } from "@connext/types";
 import { ChannelSigner, getRandomBytes32 } from "@connext/utils";
-import {
-  BigNumber,
-  Wallet,
-  ContractFactory,
-  Contract,
-  constants,
-  utils,
-} from "ethers";
+import { BigNumber, Wallet, Contract, constants, utils } from "ethers";
 
 import { WithdrawApp } from "../../artifacts";
 
 import { expect, createProvider } from "../utils";
-import { MockProvider } from "ethereum-waffle";
+import { MockProvider, deployContract } from "ethereum-waffle";
 
 const { Zero, HashZero } = constants;
 const { defaultAbiCoder, hexlify, randomBytes, SigningKey } = utils;
@@ -67,12 +60,8 @@ describe("WithdrawApp", async () => {
 
   before(async () => {
     provider = await createProvider();
-    wallet = (await provider.getWallets())[2];
-    withdrawApp = await new ContractFactory(
-      WithdrawApp.abi,
-      WithdrawApp.bytecode,
-      wallet
-    ).deploy();
+    wallet = (await provider.getWallets())[0];
+    withdrawApp = await deployContract(wallet, WithdrawApp, []);
   });
 
   // helpers

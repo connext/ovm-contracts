@@ -84,7 +84,6 @@ contract SimpleSignedTransferApp is CounterfactualApp {
         view
         returns (address o)
     {
-
         // Divide the signature in r, s and v variables
         bytes32 r;
         bytes32 s;
@@ -124,6 +123,14 @@ contract SimpleSignedTransferApp is CounterfactualApp {
 
         require(!state.finalized, "Cannot take action on finalized state");
 
+        // Handle cancellation
+        if (action.data == bytes32(0)) {
+            state.finalized = true;
+
+            return abi.encode(state);
+        }
+
+        // Handle payment
         require(
             state.signerAddress == recoverSigner(action, state),
             "Incorrect signer recovered from signature"

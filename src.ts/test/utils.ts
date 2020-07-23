@@ -26,10 +26,18 @@ export function mkSig(prefix: string = "0x"): string {
 
 // ETH helpers
 const MAX_INT = toBN(2).pow(256).sub(1);
+const pks = Array(2)
+  .fill(1)
+  .map(() => Wallet.createRandom().privateKey);
+const accounts = pks.map((secretKey) => {
+  return { balance: MAX_INT.div(2).toString(), secretKey };
+});
 export const createProvider = async (): Promise<MockProvider> => {
   let provider = new MockProvider({
-    default_balance_ether: MAX_INT.div(2).toString(),
-  } as any);
+    ganacheOptions: {
+      accounts,
+    },
+  });
   if (process.env.MODE === "OVM") {
     provider = await addHandlerToProvider(provider);
   }

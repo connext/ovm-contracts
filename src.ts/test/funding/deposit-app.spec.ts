@@ -17,7 +17,7 @@ import {
 import { DepositApp, DelegateProxy, DolphinCoin } from "../../artifacts";
 
 import { expect, createProvider } from "../utils";
-import { MockProvider } from "ethereum-waffle";
+import { MockProvider, deployContract } from "ethereum-waffle";
 
 const { Zero, AddressZero } = constants;
 const { defaultAbiCoder } = utils;
@@ -55,26 +55,15 @@ describe("DepositApp", () => {
 
   before(async () => {
     provider = await createProvider();
-    // use max funded wallet, see builder.config.ts
-    wallet = (await provider.getWallets())[2];
+    wallet = (await provider.getWallets())[0];
 
-    depositApp = await new ContractFactory(
-      DepositApp.abi,
-      DepositApp.bytecode,
-      wallet
-    ).deploy();
+    depositApp = await deployContract(wallet, DepositApp, []);
 
-    erc20 = await new ContractFactory(
-      DolphinCoin.abi,
-      DolphinCoin.bytecode,
+    erc20 = (await deployContract(wallet, DolphinCoin, [MAX_INT])).connect(
       wallet
-    ).deploy();
+    );
 
-    proxy = await new ContractFactory(
-      DelegateProxy.abi,
-      DelegateProxy.bytecode,
-      wallet
-    ).deploy();
+    proxy = await deployContract(wallet, DelegateProxy, []);
   });
 
   const computeOutcome = async (state: DepositAppState): Promise<string> => {
@@ -172,17 +161,6 @@ describe("DepositApp", () => {
     );
   };
 
-  it("Correctly calculates deposit amount for Eth", async () => {
-    const assetId = AddressZero;
-    const amount = BigNumber.from(10000);
-    const initialState = await createInitialState(assetId);
-
-    await deposit(assetId, amount);
-
-    const outcome = await computeOutcome(initialState);
-    await validateOutcome(outcome, initialState, amount);
-  });
-
   it("Correctly calculates deposit amount for tokens", async () => {
     const assetId = erc20.address;
     const amount = BigNumber.from(10000);
@@ -192,18 +170,6 @@ describe("DepositApp", () => {
 
     const outcome = await computeOutcome(initialState);
     await validateOutcome(outcome, initialState, amount);
-  });
-
-  it("Correctly calculates deposit amount for Eth with eth withdraw", async () => {
-    const assetId = AddressZero;
-    const amount = BigNumber.from(10000);
-    const initialState = await createInitialState(assetId);
-
-    await deposit(assetId, amount);
-    await withdraw(assetId, amount.div(2));
-
-    const outcome = await computeOutcome(initialState);
-    await validateOutcome(outcome, initialState, amount, amount.div(2));
   });
 
   it("Correctly calculates deposit amount for token with token withdraw", async () => {
@@ -216,33 +182,6 @@ describe("DepositApp", () => {
 
     const outcome = await computeOutcome(initialState);
     await validateOutcome(outcome, initialState, amount, amount.div(2));
-  });
-
-  it("Correctly calculates deposit amount for Eth with token withdraw", async () => {
-    const assetId = AddressZero;
-    const amount = BigNumber.from(10000);
-    const ethInitialState = await createInitialState(assetId);
-    const tokenInitialState = await createInitialState(erc20.address);
-
-    await deposit(assetId, amount);
-    await deposit(erc20.address, amount);
-    await withdraw(erc20.address, amount);
-
-    await validateOutcomes([
-      {
-        assetId,
-        outcome: await computeOutcome(ethInitialState),
-        initialState: ethInitialState,
-        deposit: amount,
-      },
-      {
-        assetId: erc20.address,
-        outcome: await computeOutcome(tokenInitialState),
-        initialState: tokenInitialState,
-        deposit: amount,
-        withdrawal: amount,
-      },
-    ]);
   });
 
   it("Correctly calculates deposit amount for token with token withdraw > deposit (should underflow)", async () => {
@@ -260,7 +199,7 @@ describe("DepositApp", () => {
   });
 
   it("Correctly calculates deposit amount for token total withdraw overflow", async () => {
-    const assetId = AddressZero;
+    const assetId = erc20.address;
     const amount = BigNumber.from(10000);
     // setup multisig with correct total withdraw
     await deposit(assetId, MAX_INT.div(4));
@@ -293,7 +232,7 @@ describe("DepositApp", () => {
   });
 
   it("Correctly calculates deposit amount for token total withdraw overflow AND expression underflow", async () => {
-    const assetId = AddressZero;
+    const assetId = erc20.address;
     const amount = BigNumber.from(10000);
     // setup multisig with correct total withdraw
     await deposit(assetId, MAX_INT.div(4));
@@ -315,6 +254,5 @@ describe("DepositApp", () => {
 
     const outcome = await computeOutcome(initialState);
     await validateOutcome(outcome, initialState, amount, MAX_INT.div(4));
-    await withdraw(assetId, MAX_INT.div(4)); // do this so we get funds back for next test
   });
 });
