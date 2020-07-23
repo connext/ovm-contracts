@@ -18,7 +18,7 @@ import * as SimpleTwoPartySwapApp from "./artifacts/SimpleTwoPartySwapApp.json";
 import * as SingleAssetTwoPartyCoinTransferInterpreter from "./artifacts/SingleAssetTwoPartyCoinTransferInterpreter.json";
 import * as TwoPartyFixedOutcomeInterpreter from "./artifacts/TwoPartyFixedOutcomeInterpreter.json";
 
-export * from "./commitments";
+export * from "./src.ts/commitments";
 export {
   addressBook,
   addressHistory,

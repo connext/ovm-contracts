@@ -1,5 +1,5 @@
 {
-  "sourceDirectory": "./contracts",
+  "sourceDirectory": "./src.sol",
   "outputDirectory": "./artifacts",
   "compilerVersion": "./node_modules/solc"
 }
