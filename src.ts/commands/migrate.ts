@@ -14,13 +14,17 @@ export const coreContracts = [
   "ChallengeRegistry",
   "ConditionalTransactionDelegateTarget",
   "DepositApp",
+  "GraphSignedTransferApp",
+  "HashLockTransferApp",
   "IdentityApp",
   "MinimumViableMultisig",
   "MultiAssetMultiPartyCoinTransferInterpreter",
+  "ProxyFactory",
   "SimpleLinkedTransferApp",
   "SimpleSignedTransferApp",
   "SimpleTwoPartySwapApp",
   "SingleAssetTwoPartyCoinTransferInterpreter",
+  "TimeLockedPassThrough",
   "TwoPartyFixedOutcomeInterpreter",
   "WithdrawApp",
   "WithdrawInterpreter",
@@ -49,8 +53,7 @@ export const migrate = async (
     )}\n`
   );
 
-  // No native ETH in ovm
-  if (balance.eq(Zero) && chainId !== 108) {
+  if (balance.eq(Zero)) {
     throw new Error(
       `Account ${wallet.address} has zero balance on chain ${chainId}, aborting contract migration`
     );

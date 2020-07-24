@@ -1,10 +1,16 @@
-pragma solidity ^0.5.16;
+
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
+import "./CounterfactualAppInterface.sol";
 
-contract CounterfactualApp {
+
+contract CounterfactualApp is CounterfactualAppInterface {
 
     function isStateTerminal(bytes calldata)
+        override
+        virtual
         external
         view
         returns (bool)
@@ -13,6 +19,8 @@ contract CounterfactualApp {
     }
 
     function getTurnTaker(bytes calldata, address[] calldata)
+        override
+        virtual
         external
         view
         returns (address)
@@ -21,6 +29,8 @@ contract CounterfactualApp {
     }
 
     function applyAction(bytes calldata, bytes calldata)
+        override
+        virtual
         external
         view
         returns (bytes memory)
@@ -29,6 +39,8 @@ contract CounterfactualApp {
     }
 
     function computeOutcome(bytes calldata)
+        override
+        virtual
         external
         view
         returns (bytes memory)

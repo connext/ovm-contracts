@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
 import "./IdentityApp.sol";
@@ -7,6 +8,7 @@ import "./IdentityApp.sol";
 contract FinalizedApp is IdentityApp {
 
     function isStateTerminal(bytes calldata)
+        override
         external
         view
         returns (bool)

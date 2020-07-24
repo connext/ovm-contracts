@@ -1,14 +1,20 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
-import "../../shared/interfaces/CounterfactualApp.sol";
+import "../../adjudicator/interfaces/CounterfactualApp.sol";
+
 
 contract IdentityApp is CounterfactualApp {
+
     function computeOutcome(bytes calldata encodedState)
+        override
+        virtual
         external
         view
         returns (bytes memory)
     {
         return encodedState;
     }
+
 }

@@ -2,20 +2,23 @@
 pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../adjudicator/interfaces/CounterfactualApp.sol";
 import "../funding/libs/LibOutcome.sol";
 
-/// @title Simple Linked Transfer App
+/// @title Lightning HTLC Transfer App
 /// @notice This contract allows users to claim a payment locked in
-///         the application if they provide the correct preImage
-contract SimpleLinkedTransferApp is CounterfactualApp {
-  using SafeMath for uint256;
-
+///         the application if they provide a preImage and expiry
+///         that corresponds to a lightning htlc
+contract HashLockTransferApp is CounterfactualApp {
+  /**
+   * This app can also not be used to send _multiple_ hashlocked payments,
+   * only one can be redeemed with the preImage.
+   */
   struct AppState {
     LibOutcome.CoinTransfer[2] coinTransfers;
-    bytes32 linkedHash;
+    bytes32 lockHash;
     bytes32 preImage;
+    uint256 expiry;
     bool finalized;
   }
 
@@ -36,19 +39,20 @@ contract SimpleLinkedTransferApp is CounterfactualApp {
 
     // Handle cancellation
     if (action.preImage == bytes32(0)) {
-      state.preImage = action.preImage;
       state.finalized = true;
 
       return abi.encode(state);
     }
 
     // Handle payment
+    // Check here to always allow cancellation of a payment if the payment
+    // itself has expired
+    require(block.number < state.expiry, "Cannot take action if expiry is expired");
     bytes32 generatedHash = sha256(abi.encode(action.preImage));
     require(
-      state.linkedHash == generatedHash,
+      state.lockHash == generatedHash,
       "Hash generated from preimage does not match hash in state"
     );
-
     state.coinTransfers[1].amount = state.coinTransfers[0].amount;
     state.coinTransfers[0].amount = 0;
     state.preImage = action.preImage;
@@ -64,7 +68,12 @@ contract SimpleLinkedTransferApp is CounterfactualApp {
     returns (bytes memory)
   {
     AppState memory state = abi.decode(encodedState, (AppState));
-    // Revert payment if it's uninstalled before being finalized
+
+    // If payment hasn't been unlocked, require that the expiry is expired
+    if (!state.finalized) {
+      require(block.number >= state.expiry, "Cannot revert payment if expiry is unexpired");
+    }
+
     return abi.encode(state.coinTransfers);
   }
 

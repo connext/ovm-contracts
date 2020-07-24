@@ -1,9 +1,11 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental ABIEncoderV2;
 
 import "./MultisigData.sol";
 import "../../shared/libs/LibCommitment.sol";
 import "../../shared/libs/LibChannelCrypto.sol";
+
 
 /// @title MinimumViableMultisig - A multisig wallet supporting the minimum
 /// features required for state channels support
@@ -14,15 +16,19 @@ import "../../shared/libs/LibChannelCrypto.sol";
 /// (c) Does not use on-chain address for signature verification
 /// (d) Uses hash-based instead of nonce-based replay protection
 contract MinimumViableMultisig is MultisigData, LibCommitment {
+
     using LibChannelCrypto for bytes32;
 
     mapping(bytes32 => bool) isExecuted;
 
     address[] private _owners;
 
-    enum Operation {Call, DelegateCall}
+    enum Operation {
+        Call,
+        DelegateCall
+    }
 
-    function receive() external payable {}
+    receive() external payable { }
 
     /// @notice Contract constructor
     /// @param owners An array of unique addresses representing the multisig owners
@@ -46,7 +52,9 @@ contract MinimumViableMultisig is MultisigData, LibCommitment {
         bytes memory data,
         Operation operation,
         bytes[] memory signatures
-    ) public {
+    )
+        public
+    {
         bytes32 transactionHash = getTransactionHash(
             to,
             value,
@@ -62,13 +70,17 @@ contract MinimumViableMultisig is MultisigData, LibCommitment {
 
         for (uint256 i = 0; i < _owners.length; i++) {
             require(
-                _owners[i] ==
-                    transactionHash.verifyChannelMessage(signatures[i]),
+                _owners[i] == transactionHash.verifyChannelMessage(signatures[i]),
                 "Invalid signature"
             );
         }
 
-        execute(to, value, data, operation);
+        execute(
+            to,
+            value,
+            data,
+            operation
+        );
     }
 
     /// @notice Compute a unique transaction hash for a particular (to, value, data, op) tuple
@@ -80,23 +92,30 @@ contract MinimumViableMultisig is MultisigData, LibCommitment {
         uint256 value,
         bytes memory data,
         Operation operation
-    ) public view returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    uint8(CommitmentTarget.MULTISIG),
-                    address(this),
-                    to,
-                    value,
-                    keccak256(data),
-                    uint8(operation)
-                )
-            );
+    )
+        public
+        view
+        returns (bytes32)
+    {
+        return keccak256(
+            abi.encodePacked(
+                uint8(CommitmentTarget.MULTISIG),
+                address(this),
+                to,
+                value,
+                keccak256(data),
+                uint8(operation)
+            )
+        );
     }
 
     /// @notice A getter function for the owners of the multisig
     /// @return An array of addresses representing the owners
-    function getOwners() public view returns (address[] memory) {
+    function getOwners()
+        public
+        view
+        returns (address[] memory)
+    {
         return _owners;
     }
 
@@ -106,34 +125,24 @@ contract MinimumViableMultisig is MultisigData, LibCommitment {
         uint256 value,
         bytes memory data,
         Operation operation
-    ) internal {
+    )
+        internal
+    {
         if (operation == Operation.Call) {
             require(executeCall(to, value, data), "executeCall failed");
         } else if (operation == Operation.DelegateCall) {
-            require(
-                executeDelegateCall(to, data),
-                "executeDelegateCall failed"
-            );
+            require(executeDelegateCall(to, data), "executeDelegateCall failed");
         }
     }
 
     /// @notice Execute a CALL on behalf of the multisignature wallet
     /// @return success A boolean indicating if the transaction was successful or not
-    function executeCall(
-        address to,
-        uint256 value,
-        bytes memory data
-    ) internal returns (bool success) {
+    function executeCall(address to, uint256 value, bytes memory data)
+        internal
+        returns (bool success)
+    {
         assembly {
-            success := call(
-                not(0),
-                to,
-                value,
-                add(data, 0x20),
-                mload(data),
-                0,
-                0
-            )
+            success := call(not(0), to, value, add(data, 0x20), mload(data), 0, 0)
         }
     }
 
@@ -144,14 +153,8 @@ contract MinimumViableMultisig is MultisigData, LibCommitment {
         returns (bool success)
     {
         assembly {
-            success := delegatecall(
-                not(0),
-                to,
-                add(data, 0x20),
-                mload(data),
-                0,
-                0
-            )
+            success := delegatecall(not(0), to, add(data, 0x20), mload(data), 0, 0)
         }
     }
+
 }

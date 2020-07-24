@@ -27,13 +27,11 @@ export class ConditionalTransactionCommitment extends MultisigCommitment {
     public readonly interpreterParams: string,
     public readonly transactionData: string = "",
     initiatorSignature?: string,
-    responderSignature?: string
+    responderSignature?: string,
   ) {
     super(multisig, multisigOwners, initiatorSignature, responderSignature);
     if (interpreterAddr === AddressZero) {
-      throw Error(
-        "The outcome type in this application logic contract is not supported yet."
-      );
+      throw Error("The outcome type in this application logic contract is not supported yet.");
     }
 
     this.transactionData = this.transactionData || this.getTransactionData();
@@ -68,7 +66,7 @@ export class ConditionalTransactionCommitment extends MultisigCommitment {
       json.interpreterParams,
       json.transactionData,
       sigs[0],
-      sigs[1]
+      sigs[1],
     );
   }
 

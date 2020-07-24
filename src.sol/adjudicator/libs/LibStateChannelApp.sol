@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -9,6 +10,7 @@ import "./LibDispute.sol";
 /// @author Liam Horne - <liam@l4v.io>
 /// @notice Contains the structures and enums needed when disputing apps
 contract LibStateChannelApp is LibDispute {
+
     using LibChannelCrypto for bytes32;
     using SafeMath for uint256;
 
@@ -33,28 +35,39 @@ contract LibStateChannelApp is LibDispute {
 
     /// @dev Checks whether the given timeout has passed
     /// @param timeout a timeout as block number
-    function hasPassed(uint256 timeout) public view returns (bool) {
-        return timeout <= block.timestamp;
-    }
-
-    /// @dev Checks whether it is still possible to send all-party-signed states
-    /// @param appChallenge the app challenge to check
-    function isDisputable(AppChallenge memory appChallenge)
+    function hasPassed(
+        uint256 timeout
+    )
         public
         view
         returns (bool)
     {
-        return
-            appChallenge.status == ChallengeStatus.NO_CHALLENGE ||
-            (appChallenge.status == ChallengeStatus.IN_DISPUTE &&
-                !hasPassed(appChallenge.finalizesAt));
+        return timeout <= block.number;
+    }
+
+    /// @dev Checks whether it is still possible to send all-party-signed states
+    /// @param appChallenge the app challenge to check
+    function isDisputable(
+        AppChallenge memory appChallenge
+    )
+        public
+        view
+        returns (bool)
+    {
+        return appChallenge.status == ChallengeStatus.NO_CHALLENGE ||
+            (
+                appChallenge.status == ChallengeStatus.IN_DISPUTE &&
+                !hasPassed(appChallenge.finalizesAt)
+            );
     }
 
     /// @dev Checks an outcome for a challenge has been set
     /// @param appChallenge the app challenge to check
-    function isOutcomeSet(AppChallenge memory appChallenge)
+    function isOutcomeSet(
+        AppChallenge memory appChallenge
+    )
         public
-        view
+        pure
         returns (bool)
     {
         return appChallenge.status == ChallengeStatus.OUTCOME_SET;
@@ -66,13 +79,21 @@ contract LibStateChannelApp is LibDispute {
     function isProgressable(
         AppChallenge memory appChallenge,
         uint256 defaultTimeout
-    ) public view returns (bool) {
+    )
+        public
+        view
+        returns (bool)
+    {
         return
-            (appChallenge.status == ChallengeStatus.IN_DISPUTE &&
+            (
+                appChallenge.status == ChallengeStatus.IN_DISPUTE &&
                 hasPassed(appChallenge.finalizesAt) &&
-                !hasPassed(appChallenge.finalizesAt.add(defaultTimeout))) ||
-            (appChallenge.status == ChallengeStatus.IN_ONCHAIN_PROGRESSION &&
-                !hasPassed(appChallenge.finalizesAt));
+                !hasPassed(appChallenge.finalizesAt.add(defaultTimeout))
+            ) ||
+            (
+                appChallenge.status == ChallengeStatus.IN_ONCHAIN_PROGRESSION &&
+                !hasPassed(appChallenge.finalizesAt)
+            );
     }
 
     /// @dev Checks whether it is possible to cancel a given challenge
@@ -81,7 +102,11 @@ contract LibStateChannelApp is LibDispute {
     function isCancellable(
         AppChallenge memory appChallenge,
         uint256 defaultTimeout
-    ) public view returns (bool) {
+    )
+        public
+        view
+        returns (bool)
+    {
         // Note: we also initially allowed cancelling a dispute during
         //       the dispute phase but before timeout had expired.
         //       TODO: does that make sense to add back in?
@@ -94,12 +119,24 @@ contract LibStateChannelApp is LibDispute {
     function isFinalized(
         AppChallenge memory appChallenge,
         uint256 defaultTimeout
-    ) public view returns (bool) {
-        return ((appChallenge.status == ChallengeStatus.IN_DISPUTE &&
-            hasPassed(appChallenge.finalizesAt.add(defaultTimeout))) ||
-            (appChallenge.status == ChallengeStatus.IN_ONCHAIN_PROGRESSION &&
-                hasPassed(appChallenge.finalizesAt)) ||
-            (appChallenge.status == ChallengeStatus.EXPLICITLY_FINALIZED));
+    )
+        public
+        view
+        returns (bool)
+    {
+        return (
+          (
+              appChallenge.status == ChallengeStatus.IN_DISPUTE &&
+              hasPassed(appChallenge.finalizesAt.add(defaultTimeout))
+          ) ||
+          (
+              appChallenge.status == ChallengeStatus.IN_ONCHAIN_PROGRESSION &&
+              hasPassed(appChallenge.finalizesAt)
+          ) ||
+          (
+              appChallenge.status == ChallengeStatus.EXPLICITLY_FINALIZED
+          )
+        );
     }
 
     /// @dev Verifies signatures given the signer addresses
@@ -110,7 +147,11 @@ contract LibStateChannelApp is LibDispute {
         bytes[] memory signatures,
         bytes32 txHash,
         address[] memory signers
-    ) public view returns (bool) {
+    )
+        public
+        pure
+        returns (bool)
+    {
         require(
             signers.length == signatures.length,
             "Signers and signatures should be of equal length"
@@ -123,4 +164,5 @@ contract LibStateChannelApp is LibDispute {
         }
         return true;
     }
+
 }

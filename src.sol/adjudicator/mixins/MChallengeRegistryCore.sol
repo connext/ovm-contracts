@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
 import "../../shared/libs/LibCommitment.sol";
@@ -6,24 +7,24 @@ import "../libs/LibStateChannelApp.sol";
 import "../libs/LibAppCaller.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-contract MChallengeRegistryCore is
-    LibCommitment,
-    LibStateChannelApp,
-    LibAppCaller
-{
+
+contract MChallengeRegistryCore is LibCommitment, LibStateChannelApp, LibAppCaller {
+
     using SafeMath for uint256;
 
     // A mapping of appIdentityHash to AppChallenge structs which represents
     // the current on-chain status of some particular application's state.
-    mapping(bytes32 => AppChallenge) public appChallenges;
+    mapping (bytes32 => AppChallenge) public appChallenges;
 
     // A mapping of appIdentityHash to outcomes
-    mapping(bytes32 => bytes) public appOutcomes;
+    mapping (bytes32 => bytes) public appOutcomes;
 
     /// @notice Compute a hash of an application's state
     /// @param appState The ABI encoded state
     /// @return A bytes32 hash of the state
-    function appStateToHash(bytes memory appState)
+    function appStateToHash(
+        bytes memory appState
+    )
         internal
         pure
         returns (bytes32)
@@ -34,21 +35,22 @@ contract MChallengeRegistryCore is
     /// @notice Compute a unique hash for a single instance of an App
     /// @param appIdentity An `AppIdentity` struct that encodes all unique info for an App
     /// @return A bytes32 hash of the AppIdentity
-    function appIdentityToHash(AppIdentity memory appIdentity)
+    function appIdentityToHash(
+        AppIdentity memory appIdentity
+    )
         internal
         pure
         returns (bytes32)
     {
-        return
-            keccak256(
-                abi.encodePacked(
-                    appIdentity.multisigAddress,
-                    appIdentity.channelNonce,
-                    keccak256(abi.encodePacked(appIdentity.participants)),
-                    appIdentity.appDefinition,
-                    appIdentity.defaultTimeout
-                )
-            );
+        return keccak256(
+            abi.encodePacked(
+                appIdentity.multisigAddress,
+                appIdentity.channelNonce,
+                keccak256(abi.encodePacked(appIdentity.participants)),
+                appIdentity.appDefinition,
+                appIdentity.defaultTimeout
+            )
+        );
     }
 
     /// @notice Compute a unique hash for the state of a channelized app instance
@@ -62,17 +64,20 @@ contract MChallengeRegistryCore is
         bytes32 appStateHash,
         uint256 versionNumber,
         uint256 timeout
-    ) internal pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    uint8(CommitmentTarget.SET_STATE),
-                    identityHash,
-                    appStateHash,
-                    versionNumber,
-                    timeout
-                )
-            );
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(
+            abi.encodePacked(
+                uint8(CommitmentTarget.SET_STATE),
+                identityHash,
+                appStateHash,
+                versionNumber,
+                timeout
+            )
+        );
     }
 
     /// @notice Compute a unique hash for the state of a channelized app instance
@@ -82,22 +87,29 @@ contract MChallengeRegistryCore is
     function computeCancelDisputeHash(
         bytes32 identityHash,
         uint256 versionNumber
-    ) internal pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    uint8(CommitmentTarget.CANCEL_DISPUTE),
-                    identityHash,
-                    versionNumber
-                )
-            );
+    )
+        internal
+        pure
+        returns (bytes32)
+    {
+        return keccak256(
+            abi.encodePacked(
+                uint8(CommitmentTarget.CANCEL_DISPUTE),
+                identityHash,
+                versionNumber
+            )
+        );
     }
 
     function correctKeysSignedAppChallengeUpdate(
         bytes32 identityHash,
         address[] memory participants,
         SignedAppChallengeUpdate memory req
-    ) public view returns (bool) {
+    )
+        public
+        pure
+        returns (bool)
+    {
         bytes32 digest = computeAppChallengeHash(
             identityHash,
             req.appStateHash,
@@ -105,6 +117,11 @@ contract MChallengeRegistryCore is
             req.timeout
         );
 
-        return verifySignatures(req.signatures, digest, participants);
+        return verifySignatures(
+            req.signatures,
+            digest,
+            participants
+        );
     }
+
 }

@@ -30,7 +30,7 @@ export class SetStateCommitment implements EthereumCommitment {
     public readonly appIdentityHash: string = appIdentityToHash(appIdentity),
     public transactionData: string = "",
     private initiatorSignature?: string,
-    private responderSignature?: string
+    private responderSignature?: string,
   ) {
     this.transactionData = this.transactionData || this.getTransactionData();
   }
@@ -41,23 +41,20 @@ export class SetStateCommitment implements EthereumCommitment {
 
   public async addSignatures(
     signature1: string | undefined,
-    signature2: string | undefined = undefined
+    signature2: string | undefined = undefined,
   ): Promise<void> {
     for (const sig of [signature1, signature2]) {
       if (!sig) {
         continue;
       }
-      const recovered = await recoverAddressFromChannelMessage(
-        this.hashToSign(),
-        sig
-      );
+      const recovered = await recoverAddressFromChannelMessage(this.hashToSign(), sig);
       if (recovered === this.appIdentity.participants[0]) {
         this.initiatorSignature = sig;
       } else if (recovered === this.appIdentity.participants[1]) {
         this.responderSignature = sig;
       } else {
         throw new Error(
-          `Invalid signer detected. Got ${recovered}, expected one of: ${this.appIdentity.participants}`
+          `Invalid signer detected. Got ${recovered}, expected one of: ${this.appIdentity.participants}`,
         );
       }
     }
@@ -78,7 +75,7 @@ export class SetStateCommitment implements EthereumCommitment {
         this.appStateHash,
         this.versionNumber,
         this.stateTimeout,
-      ]
+      ],
     );
   }
 
@@ -117,10 +114,7 @@ export class SetStateCommitment implements EthereumCommitment {
 
   public static fromJson(json: SetStateCommitmentJSON) {
     const bnJson = bigNumberifyJson(json);
-    const sigs = bnJson.signatures || [
-      bnJson["initiatorSignature"],
-      bnJson["responderSignature"],
-    ];
+    const sigs = bnJson.signatures || [bnJson["initiatorSignature"], bnJson["responderSignature"]];
     return new SetStateCommitment(
       bnJson.challengeRegistryAddress,
       bnJson.appIdentity,
@@ -130,7 +124,7 @@ export class SetStateCommitment implements EthereumCommitment {
       bnJson.appIdentityHash,
       bnJson.transactionData,
       sigs[0],
-      sigs[1]
+      sigs[1],
     );
   }
 
@@ -156,13 +150,10 @@ export class SetStateCommitment implements EthereumCommitment {
         // to be used in the `progressState` path
         continue;
       }
-      const signer = await recoverAddressFromChannelMessage(
-        this.hashToSign(),
-        sig
-      );
+      const signer = await recoverAddressFromChannelMessage(this.hashToSign(), sig);
       if (signer !== this.appIdentity.participants[idx]) {
         throw new Error(
-          `Got ${signer} and expected ${this.appIdentity.participants[idx]} in set state commitment`
+          `Got ${signer} and expected ${this.appIdentity.participants[idx]} in set state commitment`,
         );
       }
     }

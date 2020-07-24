@@ -1,10 +1,13 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
 import "../libs/LibStateChannelApp.sol";
 import "./MChallengeRegistryCore.sol";
 
+
 contract MixinCancelDispute is LibStateChannelApp, MChallengeRegistryCore {
+
     /// @notice Unanimously agree to cancel a challenge
     /// @param appIdentity an AppIdentity object pointing to the app being cancelled
     /// @param req Cancel request, includes signatures on app state hash + current challenge status
@@ -12,9 +15,11 @@ contract MixinCancelDispute is LibStateChannelApp, MChallengeRegistryCore {
     function cancelDispute(
         AppIdentity memory appIdentity,
         SignedCancelDisputeRequest memory req
-    ) public // TODO: Uncomment when ABIEncoderV2 supports `external`
-    //       ref: https://github.com/ethereum/solidity/issues/3199
-    // external
+    )
+        // TODO: Uncomment when ABIEncoderV2 supports `external`
+        //       ref: https://github.com/ethereum/solidity/issues/3199
+        // external
+        public
     {
         bytes32 identityHash = appIdentityToHash(appIdentity);
         AppChallenge storage challenge = appChallenges[identityHash];
@@ -57,12 +62,21 @@ contract MixinCancelDispute is LibStateChannelApp, MChallengeRegistryCore {
         bytes32 identityHash,
         address[] memory participants,
         SignedCancelDisputeRequest memory req
-    ) private view returns (bool) {
+    )
+        private
+        pure
+        returns (bool)
+    {
         bytes32 digest = computeCancelDisputeHash(
             identityHash,
             req.versionNumber
         );
 
-        return verifySignatures(req.signatures, digest, participants);
+        return verifySignatures(
+            req.signatures,
+            digest,
+            participants
+        );
     }
+
 }

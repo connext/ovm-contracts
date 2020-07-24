@@ -1,20 +1,23 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
-import "../../shared/interfaces/CounterfactualApp.sol";
+import "../interfaces/CounterfactualApp.sol";
+
 
 /*
  * App with a counter
  * Only participants[1] is allowed to increment it
  */
 contract AppWithAction is CounterfactualApp {
+
     enum TwoPartyFixedOutcome {
         SEND_TO_ADDR_ONE,
         SEND_TO_ADDR_TWO,
         SPLIT_AND_SEND_TO_BOTH_ADDRS
     }
 
-    enum ActionType {SUBMIT_COUNTER_INCREMENT, ACCEPT_INCREMENT}
+    enum ActionType { SUBMIT_COUNTER_INCREMENT, ACCEPT_INCREMENT }
 
     struct State {
         uint256 counter;
@@ -32,12 +35,19 @@ contract AppWithAction is CounterfactualApp {
     function getTurnTaker(
         bytes calldata encodedState,
         address[] calldata participants
-    ) external view returns (address) {
+    )
+        override
+        external
+        view
+        returns (address)
+    {
         State memory state = abi.decode(encodedState, (State));
         return participants[state.counter > 0 ? 0 : 1];
     }
 
     function computeOutcome(bytes calldata)
+        override
+        virtual
         external
         view
         returns (bytes memory)
@@ -48,7 +58,13 @@ contract AppWithAction is CounterfactualApp {
     function applyAction(
         bytes calldata encodedState,
         bytes calldata encodedAction
-    ) external view returns (bytes memory ret) {
+    )
+        override
+        virtual
+        external
+        view
+        returns (bytes memory ret)
+    {
         State memory state = abi.decode(encodedState, (State));
         Action memory action = abi.decode(encodedAction, (Action));
 
@@ -63,6 +79,7 @@ contract AppWithAction is CounterfactualApp {
     }
 
     function isStateTerminal(bytes calldata encodedState)
+        override
         external
         view
         returns (bool)
@@ -70,4 +87,5 @@ contract AppWithAction is CounterfactualApp {
         State memory state = abi.decode(encodedState, (State));
         return state.counter > 5;
     }
+
 }

@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental ABIEncoderV2;
 
 import "./MultisigData.sol";
@@ -8,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// for transfers out of the multisig.
 /// It does some necessary internal bookkeeping.
 contract MultisigTransfer is MultisigData {
+
     address constant CONVENTION_FOR_ETH_TOKEN_ADDRESS = address(0x0);
 
     /// @notice Use this function for transfers of assets out of
@@ -23,6 +25,15 @@ contract MultisigTransfer is MultisigData {
     ) public {
         // Note, explicitly do NOT use safemath here. See discussion in: TODO
         totalAmountWithdrawn[assetId] += amount;
-        IERC20(assetId).transfer(recipient, amount);
+
+        if (assetId == CONVENTION_FOR_ETH_TOKEN_ADDRESS) {
+            // note: send() is deliberately used instead of transfer() here
+            // so that a revert does not stop the rest of the sends
+            // solium-disable-next-line security/no-send
+            recipient.send(amount);
+        } else {
+            IERC20(assetId).transfer(recipient, amount);
+        }
     }
+
 }

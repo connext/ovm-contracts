@@ -1,11 +1,14 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
 import "../libs/LibStateChannelApp.sol";
 import "./MChallengeRegistryCore.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
+
 contract MixinProgressState is LibStateChannelApp, MChallengeRegistryCore {
+
     using SafeMath for uint256;
 
     /// @notice Progress state with a unilateral action on the stored state
@@ -19,7 +22,9 @@ contract MixinProgressState is LibStateChannelApp, MChallengeRegistryCore {
         SignedAppChallengeUpdate memory req,
         bytes memory oldAppState,
         bytes memory action
-    ) public {
+    )
+        public
+    {
         bytes32 identityHash = appIdentityToHash(appIdentity);
         AppChallenge storage challenge = appChallenges[identityHash];
 
@@ -46,7 +51,11 @@ contract MixinProgressState is LibStateChannelApp, MChallengeRegistryCore {
         signers[0] = turnTaker;
 
         require(
-            correctKeysSignedAppChallengeUpdate(identityHash, signers, req),
+            correctKeysSignedAppChallengeUpdate(
+                identityHash,
+                signers,
+                req
+            ),
             "Call to progressState included incorrectly signed state update"
         );
 
@@ -73,7 +82,7 @@ contract MixinProgressState is LibStateChannelApp, MChallengeRegistryCore {
         challenge.status = ChallengeStatus.IN_ONCHAIN_PROGRESSION;
         challenge.appStateHash = newAppStateHash;
         challenge.versionNumber = req.versionNumber;
-        challenge.finalizesAt = block.timestamp.add(appIdentity.defaultTimeout);
+        challenge.finalizesAt = block.number.add(appIdentity.defaultTimeout);
 
         // Check whether state is terminal, for immediate finalization (could be optional)
         if (isStateTerminal(appIdentity.appDefinition, newAppState)) {
@@ -97,4 +106,5 @@ contract MixinProgressState is LibStateChannelApp, MChallengeRegistryCore {
             challenge.finalizesAt
         );
     }
+
 }

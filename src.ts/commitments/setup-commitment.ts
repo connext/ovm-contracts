@@ -20,7 +20,7 @@ export class SetupCommitment extends MultisigCommitment {
     public readonly contractAddresses: ContractAddresses,
     public readonly multisigAddress: string,
     public readonly multisigOwners: string[],
-    public readonly freeBalanceAppIdentity: AppIdentity
+    public readonly freeBalanceAppIdentity: AppIdentity,
   ) {
     super(multisigAddress, multisigOwners);
   }

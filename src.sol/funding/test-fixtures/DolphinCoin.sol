@@ -1,18 +1,18 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract DolphinCoin is ERC20 {
+
+contract DolphinCoin is ERC20("DolphinCoin", "DOC") {
     uint8 public constant DECIMALS = 18;
+    uint256 public constant INITIAL_SUPPLY = 100_000_000 * (uint256(10) ** DECIMALS);
 
     /**
      * @dev Constructor that gives msg.sender all of existing tokens.
      */
-    constructor(uint256 _supply) public {
-        _mint(msg.sender, _supply);
-    }
-
-    function drip(uint256 _drop) public {
-        _mint(msg.sender, _drop);
+    constructor() public {
+        _setupDecimals(DECIMALS);
+        _mint(msg.sender, INITIAL_SUPPLY);
     }
 }

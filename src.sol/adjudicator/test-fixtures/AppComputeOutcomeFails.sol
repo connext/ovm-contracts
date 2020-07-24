@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
 import "./AppWithAction.sol";
@@ -11,6 +12,7 @@ import "./AppWithAction.sol";
 contract AppComputeOutcomeFails is AppWithAction {
 
     function computeOutcome(bytes calldata)
+        override
         external
         view
         returns (bytes memory)

@@ -1,11 +1,14 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
 import "../libs/LibStateChannelApp.sol";
 import "./MChallengeRegistryCore.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
+
 contract MixinSetState is LibStateChannelApp, MChallengeRegistryCore {
+
     using SafeMath for uint256;
 
     /// @notice Set the instance state/AppChallenge to a given value.
@@ -20,7 +23,9 @@ contract MixinSetState is LibStateChannelApp, MChallengeRegistryCore {
     function setState(
         AppIdentity memory appIdentity,
         SignedAppChallengeUpdate memory req
-    ) public {
+    )
+        public
+    {
         bytes32 identityHash = appIdentityToHash(appIdentity);
         AppChallenge storage challenge = appChallenges[identityHash];
 
@@ -47,7 +52,7 @@ contract MixinSetState is LibStateChannelApp, MChallengeRegistryCore {
         challenge.status = ChallengeStatus.IN_DISPUTE;
         challenge.appStateHash = req.appStateHash;
         challenge.versionNumber = req.versionNumber;
-        challenge.finalizesAt = block.timestamp.add(req.timeout);
+        challenge.finalizesAt = block.number.add(req.timeout);
 
         emit ChallengeUpdated(
             identityHash,
@@ -57,4 +62,5 @@ contract MixinSetState is LibStateChannelApp, MChallengeRegistryCore {
             challenge.finalizesAt
         );
     }
+
 }

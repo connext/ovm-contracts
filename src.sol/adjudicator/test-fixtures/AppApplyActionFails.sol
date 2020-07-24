@@ -1,4 +1,5 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
 import "./AppWithAction.sol";
@@ -11,12 +12,13 @@ import "./AppWithAction.sol";
 contract AppApplyActionFails is AppWithAction {
 
     function applyAction(
-        bytes calldata encodedState,
-        bytes calldata encodedAction
+        bytes calldata /* encodedState */,
+        bytes calldata /* encodedAction */
     )
+        override
         external
         view
-        returns (bytes memory ret)
+        returns (bytes memory)
     {
         revert("applyAction fails for this app");
     }

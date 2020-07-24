@@ -1,13 +1,16 @@
-pragma solidity ^0.5.16;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.6.4;
 pragma experimental "ABIEncoderV2";
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "../shared/interfaces/CounterfactualApp.sol";
+import "../adjudicator/interfaces/CounterfactualApp.sol";
 import "../funding/libs/LibOutcome.sol";
+
 
 /// @title SimpleTwoPartySwapApp
 /// @notice This contract lets two parties swap one ERC20 or ETH asset for another
 contract SimpleTwoPartySwapApp is CounterfactualApp {
+
     using SafeMath for uint256;
 
     struct AppState {
@@ -15,6 +18,7 @@ contract SimpleTwoPartySwapApp is CounterfactualApp {
     }
 
     function computeOutcome(bytes calldata encodedState)
+        override
         external
         view
         returns (bytes memory)

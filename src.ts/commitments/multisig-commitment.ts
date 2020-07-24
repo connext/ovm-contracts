@@ -17,7 +17,7 @@ export abstract class MultisigCommitment implements EthereumCommitment {
     readonly multisigAddress: string,
     readonly multisigOwners: string[],
     private initiatorSignature?: string,
-    private responderSignature?: string
+    private responderSignature?: string,
   ) {}
 
   abstract getTransactionDetails(): MultisigTransaction;
@@ -29,22 +29,16 @@ export abstract class MultisigCommitment implements EthereumCommitment {
     return [this.initiatorSignature!, this.responderSignature!];
   }
 
-  public async addSignatures(
-    signature1: string,
-    signature2: string
-  ): Promise<void> {
+  public async addSignatures(signature1: string, signature2: string): Promise<void> {
     for (const sig of [signature1, signature2]) {
-      const recovered = await recoverAddressFromChannelMessage(
-        this.hashToSign(),
-        sig
-      );
+      const recovered = await recoverAddressFromChannelMessage(this.hashToSign(), sig);
       if (recovered === this.multisigOwners[0]) {
         this.initiatorSignature = sig;
       } else if (recovered === this.multisigOwners[1]) {
         this.responderSignature = sig;
       } else {
         throw new Error(
-          `Invalid signer detected. Got ${recovered}, expected one of: ${this.multisigOwners}`
+          `Invalid signer detected. Got ${recovered}, expected one of: ${this.multisigOwners}`,
         );
       }
     }
@@ -58,9 +52,7 @@ export abstract class MultisigCommitment implements EthereumCommitment {
     await this.assertSignatures();
     const multisigInput = this.getTransactionDetails();
 
-    const txData = new Interface(
-      MinimumViableMultisig.abi
-    ).encodeFunctionData("execTransaction", [
+    const txData = new Interface(MinimumViableMultisig.abi).encodeFunctionData("execTransaction", [
       multisigInput.to,
       multisigInput.value,
       multisigInput.data,
@@ -82,7 +74,7 @@ export abstract class MultisigCommitment implements EthereumCommitment {
         value,
         solidityKeccak256(["bytes"], [data]),
         operation,
-      ]
+      ],
     );
   }
 
@@ -96,13 +88,10 @@ export abstract class MultisigCommitment implements EthereumCommitment {
     }
     // assert recovery
     for (const sig of this.signatures) {
-      const recovered = await recoverAddressFromChannelMessage(
-        this.hashToSign(),
-        sig
-      );
+      const recovered = await recoverAddressFromChannelMessage(this.hashToSign(), sig);
       if (!this.multisigOwners.includes(recovered)) {
         throw new Error(
-          `Invalid signer detected. Got ${recovered}, expected one of: ${this.multisigOwners}`
+          `Invalid signer detected. Got ${recovered}, expected one of: ${this.multisigOwners}`,
         );
       }
     }
