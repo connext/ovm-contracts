@@ -25,6 +25,9 @@ export function mkSig(prefix: string = "0x"): string {
 }
 
 // ETH helpers
+// NOTE: if using non-evm provider, make sure the accounts
+// used here align with the funded accounts on the external
+// provider
 const MAX_INT = toBN(2).pow(256).sub(1);
 const pks = Array(2)
   .fill(1)
@@ -38,14 +41,20 @@ export const createProvider = async (): Promise<MockProvider> => {
       accounts,
     },
   });
-  if (process.env.MODE !== "OVM") {
+  let provider;
+  if (process.env.MODE === "EVM") {
     return mockProvider;
+  } else if (process.env.MODE === "OVM") {
+    // Hack to get around ethers v5 provider issues with networkID
+    // switching
+    provider = await addHandlerToProvider(
+      new JsonRpcProvider("http://localhost:8545", "any")
+    );
+  } else if (process.env.MODE === "ARBITRUM") {
+    // FIXME: use a real URL
+    provider = new JsonRpcProvider("http://localhost:8545", "any");
   }
-  // Hack to get around ethers v5 provider issues with networkID
-  // switching
-  const provider = await addHandlerToProvider(
-    new JsonRpcProvider("http://localhost:8545", "any")
-  );
+  // add wallets from mock provider
   provider.getWallets = mockProvider.getWallets;
   return provider;
 };
