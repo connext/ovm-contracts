@@ -237,7 +237,9 @@ describe("SimpleSignedTransferApp", () => {
       };
 
       await expect(applyAction(preState, action)).revertedWith(
-        "Incorrect signer recovered from signature"
+        process.env.mode === "OVM"
+          ? "Incorrect signer recovered from signature"
+          : "ECDSA: invalid signature length"
       );
     });
 

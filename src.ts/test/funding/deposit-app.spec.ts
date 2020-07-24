@@ -53,17 +53,15 @@ describe("DepositApp", () => {
   const depositorWallet = Wallet.createRandom();
   const counterpartyWallet = Wallet.createRandom();
 
-  before(async () => {
+  beforeEach(async () => {
     provider = await createProvider();
     wallet = (await provider.getWallets())[0];
 
-    depositApp = await deployContract(wallet, DepositApp, []);
+    depositApp = (await deployContract(wallet, DepositApp, [])).connect(wallet);
 
-    erc20 = (await deployContract(wallet, DolphinCoin, [MAX_INT])).connect(
-      wallet
-    );
+    erc20 = (await deployContract(wallet, DolphinCoin, [])).connect(wallet);
 
-    proxy = await deployContract(wallet, DelegateProxy, []);
+    proxy = (await deployContract(wallet, DelegateProxy, [])).connect(wallet);
   });
 
   const computeOutcome = async (state: DepositAppState): Promise<string> => {
@@ -199,7 +197,7 @@ describe("DepositApp", () => {
   });
 
   it("Correctly calculates deposit amount for token total withdraw overflow", async () => {
-    const assetId = erc20.address;
+    const assetId = AddressZero;
     const amount = BigNumber.from(10000);
     // setup multisig with correct total withdraw
     await deposit(assetId, MAX_INT.div(4));
@@ -228,11 +226,10 @@ describe("DepositApp", () => {
       MAX_INT.div(4),
       MAX_INT.div(4).sub(1)
     );
-    await withdraw(assetId, MAX_INT.div(4)); // do this so we get funds back for next test
   });
 
   it("Correctly calculates deposit amount for token total withdraw overflow AND expression underflow", async () => {
-    const assetId = erc20.address;
+    const assetId = AddressZero;
     const amount = BigNumber.from(10000);
     // setup multisig with correct total withdraw
     await deposit(assetId, MAX_INT.div(4));

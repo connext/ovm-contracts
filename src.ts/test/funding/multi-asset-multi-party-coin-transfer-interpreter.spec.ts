@@ -75,11 +75,11 @@ describe("MultiAssetMultiPartyCoinTransferInterpreter", () => {
   };
 
   beforeEach(async () => {
-    const DOLPHINCOIN_SUPPLY = toBN(10).pow(18).mul(10000);
+    // const DOLPHINCOIN_SUPPLY = toBN(10).pow(18).mul(10000);
     provider = await createProvider();
     wallet = (await provider.getWallets())[0];
-    token1 = await deployContract(wallet, DolphinCoin, [DOLPHINCOIN_SUPPLY]);
-    token2 = await deployContract(wallet, DolphinCoin, [DOLPHINCOIN_SUPPLY]);
+    token1 = await deployContract(wallet, DolphinCoin, []);
+    token2 = await deployContract(wallet, DolphinCoin, []);
 
     multiAssetMultiPartyCoinTransferInterpreter = await deployContract(
       wallet,

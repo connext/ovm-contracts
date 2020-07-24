@@ -44,12 +44,12 @@
     "@connext/utils": "7.0.0",
     "@eth-optimism/rollup-full-node": "^0.0.1-alpha.28",
     "@eth-optimism/solc-transpiler": "^0.0.1-alpha.27",
-    "@openzeppelin/contracts": "2.5.0",
+    "@openzeppelin/contracts": "3.0.2",
     "ethereum-waffle": "3.0.2",
     "ethers": "5.0.5",
     "eventemitter3": "4.0.4",
     "ganache-cli": "6.9.1",
-    "solc": "0.5.16",
+    "solc": "0.6.9",
     "yargs": "15.4.1"
   },
   "devDependencies": {
