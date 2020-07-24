@@ -26,7 +26,7 @@
     "all:arbitrum": "npm run build:arbitrum && npm run test:arbitrum",
     "all:evm": "npm run build:evm && npm run test:evm",
     "build": "rm -rf ./dist/* && npm run compile && npm run transpile",
-    "build:arbitrum": "rm -rf ./dist/* && npm run compile:arb && npm run transpile",
+    "build:arbitrum": "rm -rf ./dist/* && npm run compile:arbitrum && npm run transpile",
     "build:evm": "rm -rf ./dist/* && npm run compile:evm && npm run transpile",
     "compile": "./node_modules/.bin/waffle waffle-ovm-config.json",
     "compile:arbitrum": "./node_modules/.bin/waffle waffle-arbitrum-config.json",
