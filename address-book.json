@@ -791,10 +791,10 @@
       "txHash": "0x2096e14856fc65b706b76d15c3bcf9931a834f7116e067fa42812d54f0bdf714"
     },
     "ConditionalTransactionDelegateTarget": {
-      "address": "0x9A3E7436Fdb7B4b8e998F74ACe2d7502af743107",
-      "creationCodeHash": "0xb7ec727d955bc6f1777bfe228cf7da287a2a9085cb4618a08d1403815051be84",
-      "runtimeCodeHash": "0xa61943613559003b5c6eb619c095945fff83864689b19fb406c94be5b38a7f14",
-      "txHash": "0x95fdf8e5fa556eab10d5507f5dbbcf30e6405025ae2164bebbf480a4aebbafa4"
+      "address": "0x53fC2E647F4e0d2BEE5E036BBCD2E3C1cCcB2b55",
+      "creationCodeHash": "0x62b4c1981786edd40c0b2e3fdcf443b3a430eac86b6b6f26b12596cc8782ca89",
+      "runtimeCodeHash": "0x2e5a135972f1a1d8d559a302b828fea5a76261cd5231f3f120926af6216c7a15",
+      "txHash": "0x325ca9d26526f691c7fd19ece840808d52e034437fc8efb74f46c8aa9eb53a84"
     },
     "DepositApp": {
       "address": "0x5263864202686D0c34e0D3C1EB5099823F15D198",
@@ -815,10 +815,10 @@
       "txHash": "0xd8f187ea7787bc9b51a221d7989ad3fb1fa4212cb31800b1c761303f38deaf96"
     },
     "MultiAssetMultiPartyCoinTransferInterpreter": {
-      "address": "0x188AEdd70B6D2DcC90aC658334c6d1fA3e0CC54c",
-      "creationCodeHash": "0x095b0b8cacf52ec2ed7c79014a9c7f64ad3e71f0fbe60db2c157cc8413f8631c",
-      "runtimeCodeHash": "0x438a0d711181733d0f6be22dc09311f91b96e1a6a35802b5969ebce80e609641",
-      "txHash": "0xf093f8c453c01482221eca1b88f7117049c950429e2e14574596b3e0f73eb0fa"
+      "address": "0xF4423Bd253F1Dd978C1bb04edD33b90629336D10",
+      "creationCodeHash": "0x773319a448da5a0a72107907d6592d0cc9ee953f4a403459ed408c7d8ff8154c",
+      "runtimeCodeHash": "0xb96ab23878cb483087fdce8c92277fea43202652f6e29666dd75cfd4b34492b3",
+      "txHash": "0xb425a59fd9fcc4aa7aa00ccf1063185d50f7fe0eb113a51b648c2c9a0afbd304"
     },
     "SimpleLinkedTransferApp": {
       "address": "0x143b35fD5c2871a061C706b9De0905692F455570",
@@ -839,10 +839,10 @@
       "txHash": "0xa0f98c2ec6d756f7c19a516af1a13b97e1d33a9da1691c4c11e424e37fbee0ab"
     },
     "SingleAssetTwoPartyCoinTransferInterpreter": {
-      "address": "0xE01c01E926a55d31Cd72e9B61bE4c8f32359b441",
-      "creationCodeHash": "0xfe5b0ba72cfcfd3fbd82b94dd29eff2fbc7495bcccf9b2a9fa72da3d095cc759",
-      "runtimeCodeHash": "0xb9ae94c6a91a1c09f1a9f365cd6ce2e6d1548e6b30b5c4ab94762267a7f3b478",
-      "txHash": "0x399956377aac6ad09e2e69e99fc2654185be7196f48108b32939e83c601c6128"
+      "address": "0x7Bf1eEE199b337B9645DACE72402b53E0E86a6f0",
+      "creationCodeHash": "0x10aea9740ffc36d19b66f92125ffeb7f3eb1e41d6abf4090375286cfbece0468",
+      "runtimeCodeHash": "0x2bf157a9ca2fbe95bf85c2e6645f8ab2ac660a8a8cd102cc75c8f8e109ca4f49",
+      "txHash": "0x69578dbb9f92da1c6a3abc7c9108c07d71553fbce52e7ef6c8dd7afcf5bf550e"
     },
     "TwoPartyFixedOutcomeInterpreter": {
       "address": "0xbfA7023338F2951D9dE61B408E90081e7C875724",
