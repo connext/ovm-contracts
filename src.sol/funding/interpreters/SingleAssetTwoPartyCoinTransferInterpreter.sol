@@ -21,7 +21,7 @@ contract SingleAssetTwoPartyCoinTransferInterpreter is
     // NOTE: This is useful for writing tests, but is bad practice
     // to have in the contract when deploying it. We do not want people
     // to send funds to this contract in any scenario.
-    receive() external payable {}
+    function receive() external payable {}
 
     function interpretOutcomeAndExecuteEffect(
         bytes calldata encodedOutput,
