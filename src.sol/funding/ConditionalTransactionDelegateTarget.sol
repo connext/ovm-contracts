@@ -1,16 +1,13 @@
 pragma solidity ^0.5.16;
 pragma experimental "ABIEncoderV2";
 
-import "./state-deposit-holders/MultisigTransfer.sol";
 import "../adjudicator/ChallengeRegistry.sol";
 import "./libs/LibOutcome.sol";
 
-
 /// @title ConditionalTransactionDelegateTarget
 /// @author Liam Horne - <liam@l4v.io>
-contract ConditionalTransactionDelegateTarget is MultisigTransfer {
-
-    uint256 constant MAX_UINT256 = 2 ** 256 - 1;
+contract ConditionalTransactionDelegateTarget {
+    uint256 constant MAX_UINT256 = 2**256 - 1;
 
     struct FreeBalanceAppState {
         address[] tokenAddresses;
@@ -26,24 +23,28 @@ contract ConditionalTransactionDelegateTarget is MultisigTransfer {
         address[] tokenAddresses;
     }
 
-    function withdrawWrapper(
-        address payable recipient,
-        address assetId,
-        uint256 amount,
-        bytes32 nonce
-    )
-        public
-    {
-        multisigTransfer(recipient, assetId, amount);
+    function executeWithdraw(
+        address interpreterAddress,
+        bytes32, /* nonce */
+        bytes memory encodedOutput,
+        bytes memory encodedParams
+    ) public {
+        (bool success, ) = interpreterAddress.delegatecall(
+            abi.encodeWithSignature(
+                "interpretOutcomeAndExecuteEffect(bytes,bytes)",
+                encodedOutput,
+                encodedParams
+            )
+        );
+
+        require(success, "Execution of executeWithdraw failed");
     }
 
     function executeEffectOfFreeBalance(
         ChallengeRegistry challengeRegistry,
         bytes32 freeBalanceAppIdentityHash,
         address multiAssetMultiPartyCoinTransferInterpreterAddress
-    )
-        public
-    {
+    ) public {
         FreeBalanceAppState memory freeBalanceAppState = abi.decode(
             challengeRegistry.getOutcome(freeBalanceAppIdentityHash),
             (FreeBalanceAppState)
@@ -53,7 +54,11 @@ contract ConditionalTransactionDelegateTarget is MultisigTransfer {
             freeBalanceAppState.tokenAddresses.length
         );
 
-        for (uint256 i = 0; i < freeBalanceAppState.tokenAddresses.length; i++) {
+        for (
+            uint256 i = 0;
+            i < freeBalanceAppState.tokenAddresses.length;
+            i++
+        ) {
             // The transaction's interpreter parameters are determined at the time
             // of creation of the free balance; hence we cannot know how much will be
             // deposited into it all-time. Relying on the app state is unsafe so
@@ -61,11 +66,8 @@ contract ConditionalTransactionDelegateTarget is MultisigTransfer {
             limits[i] = MAX_UINT256;
         }
 
-        (
-            bool success,
-            // solium-disable-next-line no-unused-vars
-            bytes memory returnData
-        ) = multiAssetMultiPartyCoinTransferInterpreterAddress.delegatecall(
+        (bool success, ) = multiAssetMultiPartyCoinTransferInterpreterAddress
+            .delegatecall(
             abi.encodeWithSignature(
                 "interpretOutcomeAndExecuteEffect(bytes,bytes)",
                 abi.encode(freeBalanceAppState.balances),
@@ -78,10 +80,7 @@ contract ConditionalTransactionDelegateTarget is MultisigTransfer {
             )
         );
 
-        require(
-            success,
-            "Execution of executeEffectOfFreeBalance failed"
-        );
+        require(success, "Execution of executeEffectOfFreeBalance failed");
     }
 
     /// @notice Execute a fund transfer for a state channel app in a finalized state
@@ -92,13 +91,13 @@ contract ConditionalTransactionDelegateTarget is MultisigTransfer {
         bytes32 appIdentityHash,
         address interpreterAddress,
         bytes memory interpreterParams
-    )
-        public
-    {
-        bytes32[] memory activeApps = abi.decode(
+    ) public {
+        bytes32[] memory activeApps = abi
+            .decode(
             challengeRegistry.getOutcome(freeBalanceAppIdentityHash),
             (FreeBalanceAppState)
-        ).activeApps;
+        )
+            .activeApps;
 
         bool appIsFunded = false;
 
@@ -112,11 +111,7 @@ contract ConditionalTransactionDelegateTarget is MultisigTransfer {
 
         bytes memory outcome = challengeRegistry.getOutcome(appIdentityHash);
 
-        (
-            bool success,
-            // solium-disable-next-line no-unused-vars
-            bytes memory returnData
-        ) = interpreterAddress.delegatecall(
+        (bool success, ) = interpreterAddress.delegatecall(
             abi.encodeWithSignature(
                 "interpretOutcomeAndExecuteEffect(bytes,bytes)",
                 outcome,

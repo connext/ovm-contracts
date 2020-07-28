@@ -30,8 +30,6 @@ contract SimpleSignedTransferApp is CounterfactualApp {
     }
 
     // EIP-712 DOMAIN SEPARATOR CONSTANTS
-    // KNOWN ISSUE: https://hackmd.io/elr0znYORiOMSTtfPJVAaA?view
-    // Solidity def:
     bytes32 private constant DOMAIN_TYPE_HASH = keccak256(
         "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract,bytes32 salt)"
     );

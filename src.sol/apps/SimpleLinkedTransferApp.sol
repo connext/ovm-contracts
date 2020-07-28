@@ -11,15 +11,6 @@ import "../funding/libs/LibOutcome.sol";
 contract SimpleLinkedTransferApp is CounterfactualApp {
     using SafeMath for uint256;
 
-    /**
-     * Assume the app is funded with the money already owed to receiver,
-     * as in the SimpleTwoPartySwapApp.
-     *
-     * This app can also not be used to send _multiple_ linked payments,
-     * only one can be redeemed with the preImage.
-     *
-     */
-
     struct AppState {
         LibOutcome.CoinTransfer[2] coinTransfers;
         bytes32 linkedHash;
