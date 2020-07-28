@@ -54,7 +54,9 @@ L1_SEQUENCER_MNEMONIC="candy maple cake sugar pudding cream honey rich smooth cr
 Make sure your source is built, then deploy the contracts using:
 
 ```bash
-bash ops/deploy.sh # defaults to correct local values
+> export MNEMONIC="<FUNDED_MNEMONIC>"
+> export ETH_PROVIDER="<PROVIDER_URL>"
+> bash ops/deploy.sh # defaults to correct local values
 ```
 
 You now have the contracts deployed on a local ovm chain that is accessible at "http://localhost:8545"
