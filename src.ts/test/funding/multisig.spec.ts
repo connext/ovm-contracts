@@ -14,7 +14,7 @@ import { MinimumViableMultisig } from "../../..";
 import { WithdrawCommitment } from "../../commitments/withdraw-commitment";
 
 const MAX_INT = BigNumber.from(2).pow(256).sub(1);
-describe.only("Multisig", async () => {
+describe("Multisig", async () => {
   let provider: MockProvider;
   let owner1: Wallet;
   let owner2: Wallet;
