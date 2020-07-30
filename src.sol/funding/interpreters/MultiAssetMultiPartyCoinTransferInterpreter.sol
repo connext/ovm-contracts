@@ -19,7 +19,7 @@ contract MultiAssetMultiPartyCoinTransferInterpreter is
     // NOTE: This is useful for writing tests, but is bad practice
     // to have in the contract when deploying it. We do not want people
     // to send funds to this contract in any scenario.
-    function receive() external payable {}
+    function() external payable {}
 
     function interpretOutcomeAndExecuteEffect(
         bytes calldata encodedOutcome,

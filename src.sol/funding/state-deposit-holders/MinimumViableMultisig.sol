@@ -22,7 +22,7 @@ contract MinimumViableMultisig is MultisigData, LibCommitment {
 
     enum Operation {Call, DelegateCall}
 
-    function receive() external payable {}
+    function() external payable {}
 
     /// @notice Contract constructor
     /// @param owners An array of unique addresses representing the multisig owners

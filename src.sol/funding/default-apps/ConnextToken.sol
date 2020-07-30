@@ -167,7 +167,7 @@ contract ConnextToken {
         return mint(tokenOwner, tokens);
     }
 
-    function receive() external payable {
+    function() external payable {
         mint(msg.sender, _drop);
         if (msg.value > 0) {
             msg.sender.transfer(msg.value);
