@@ -3,6 +3,7 @@ pragma solidity ^0.5.16;
 pragma experimental "ABIEncoderV2";
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 import "../shared/interfaces/CounterfactualApp.sol";
 import "../shared/libs/LibChannelCrypto.sol";
 import "../funding/libs/LibOutcome.sol";
@@ -50,7 +51,7 @@ contract SimpleSignedTransferApp is CounterfactualApp {
         returns (address)
     {
         return
-            recoverAddr(
+            ECDSA.recover(
                 keccak256(
                     abi.encodePacked(
                         "\x19\x01",
@@ -75,41 +76,6 @@ contract SimpleSignedTransferApp is CounterfactualApp {
                 ),
                 action.signature
             );
-    }
-
-    function recoverAddr(bytes32 digest, bytes memory signature)
-        internal
-        view
-        returns (address o)
-    {
-        // Divide the signature in r, s and v variables
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-
-        // ecrecover takes the signature parameters, and the only way to get them
-        // currently is to use assembly.
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            r := mload(add(signature, 0x20))
-            s := mload(add(signature, 0x40))
-            v := byte(0, mload(add(signature, 0x60)))
-        }
-
-        assembly {
-            // define pointer
-            let p := mload(0x40)
-            // store data assembly-favouring ways
-            mstore(p, digest)
-            mstore(add(p, 0x20), v)
-            mstore(add(p, 0x40), r)
-            mstore(add(p, 0x60), s)
-            if iszero(staticcall(sub(gas, 2000), 0x01, p, 0x80, p, 0x20)) {
-                revert(0, 0)
-            }
-            // data
-            o := mload(p)
-        }
     }
 
     function applyAction(

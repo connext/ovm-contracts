@@ -55,7 +55,7 @@ describe("ProxyFactory with CREATE2", () => {
     echo = await new ContractFactory(Echo.abi, Echo.bytecode, wallet).deploy();
   });
 
-  describe.skip("createProxy", async () => {
+  describe("createProxy", async () => {
     it("can be used to deploy a contract at a predictable address", async () => {
       const masterCopy = echo.address;
 
