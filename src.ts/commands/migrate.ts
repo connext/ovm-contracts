@@ -17,6 +17,7 @@ export const coreContracts = [
   "IdentityApp",
   "MinimumViableMultisig",
   "MultiAssetMultiPartyCoinTransferInterpreter",
+  "ProxyFactory",
   "SimpleLinkedTransferApp",
   "SimpleSignedTransferApp",
   "SimpleTwoPartySwapApp",
