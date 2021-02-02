@@ -21,6 +21,7 @@ library LibAsset {
     }
 
     function getOwnBalance(address assetId) internal view returns (uint256) {
+      require(!isEther(assetId), "LibAsset: NO_OVM_ETH");
       return IERC20(assetId).balanceOf(address(this));
         // return
         //     isEther(assetId)
@@ -28,15 +29,15 @@ library LibAsset {
         //         : IERC20(assetId).balanceOf(address(this));
     }
 
-    function transferEther(address payable recipient, uint256 amount)
-        internal
-        returns (bool)
-    {
-        (bool success, bytes memory returnData) =
-            recipient.call{value: amount}("");
-        LibUtils.revertIfCallFailed(success, returnData);
-        return true;
-    }
+    // function transferEther(address payable recipient, uint256 amount)
+    //     internal
+    //     returns (bool)
+    // {
+    //     (bool success, bytes memory returnData) =
+    //         recipient.call{value: amount}("");
+    //     LibUtils.revertIfCallFailed(success, returnData);
+    //     return true;
+    // }
 
     function transferERC20(
         address assetId,
@@ -63,9 +64,7 @@ library LibAsset {
         address payable recipient,
         uint256 amount
     ) internal returns (bool) {
-        return
-            isEther(assetId)
-                ? transferEther(recipient, amount)
-                : transferERC20(assetId, recipient, amount);
+        require(!isEther(assetId), "LibAsset: NO_OVM_ETH");
+        return transferERC20(assetId, recipient, amount);
     }
 }

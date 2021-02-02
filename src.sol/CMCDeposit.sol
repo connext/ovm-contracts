@@ -69,21 +69,22 @@ contract CMCDeposit is CMCCore, CMCAsset, ICMCDeposit {
         onlyViaProxy
         nonReentrant
     {
-        if (LibAsset.isEther(assetId)) {
-            require(msg.value == amount, "CMCDeposit: VALUE_MISMATCH");
-        } else {
-            // If ETH is sent along, it will be attributed to bob
-            require(msg.value == 0, "CMCDeposit: ETH_WITH_ERC_TRANSFER");
-            require(
-                LibERC20.transferFrom(
-                    assetId,
-                    msg.sender,
-                    address(this),
-                    amount
-                ),
-                "CMCDeposit: ERC20_TRANSFER_FAILED"
-            );
-        }
+        require(!LibAsset.isEther(assetId), "CMCDeposit: NO_OVM_ETH");
+        // if (LibAsset.isEther(assetId)) {
+        //     require(msg.value == amount, "CMCDeposit: VALUE_MISMATCH");
+        // } else {
+        // // If ETH is sent along, it will be attributed to bob
+        // require(msg.value == 0, "CMCDeposit: ETH_WITH_ERC_TRANSFER");
+        require(
+            LibERC20.transferFrom(
+                assetId,
+                msg.sender,
+                address(this),
+                amount
+            ),
+            "CMCDeposit: ERC20_TRANSFER_FAILED"
+        );
+        // }
         // NOTE: explicitly do NOT use safemath here
         depositsAlice[assetId] += amount;
         emit AliceDeposited(assetId, amount);
