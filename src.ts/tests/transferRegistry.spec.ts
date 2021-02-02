@@ -7,7 +7,7 @@ import { deployments } from "hardhat";
 import { alice, rando } from "../constants";
 import { getOvmContract } from "../utils";
 
-describe.only("TransferRegistry.sol", function () {
+describe("TransferRegistry.sol", function () {
   this.timeout(120_000);
   let transfer: Contract;
   let registry: Contract;
