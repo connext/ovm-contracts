@@ -1,0 +1,66 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "WithdrawHelper.ovm",
+  "sourceName": "src.sol/interfaces/WithdrawHelper.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "channelAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "assetId",
+              "type": "address"
+            },
+            {
+              "internalType": "address payable",
+              "name": "recipient",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "callTo",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "callData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct WithdrawData",
+          "name": "wd",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "actualAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "execute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

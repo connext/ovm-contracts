@@ -1,5 +1,5 @@
 import { Contract } from "@ethersproject/contracts";
-import { ethers, run } from "hardhat";
+import { l2ethers as ethers, run } from "hardhat";
 
 import { alice, bob, defaultLogLevel, provider } from "./constants";
 
@@ -11,7 +11,7 @@ export const getContract = (ethers as any).getContract;
 export const registerTransfer = (
   transferName: string,
   signerAddress: string = alice.address,
-  logLevel = defaultLogLevel,
+  logLevel = defaultLogLevel
 ): Promise<Contract> =>
   run("register-transfer", { transferName, signerAddress, logLevel });
 
@@ -19,7 +19,7 @@ export const createChannel = (
   aliceAddress: string = alice.address,
   bobAddress: string = bob.address,
   logLevel = defaultLogLevel,
-  testMode = "yarp",
+  testMode = "yarp"
 ): Promise<Contract> =>
   run("create-channel", { aliceAddress, bobAddress, logLevel, testMode });
 

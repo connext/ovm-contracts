@@ -2,7 +2,7 @@
 import { AddressZero } from "@ethersproject/constants";
 import { Contract } from "@ethersproject/contracts";
 import { expect } from "chai";
-import { deployments, ethers } from "hardhat";
+import { deployments, l2ethers as ethers } from "hardhat";
 
 import { alice, bob } from "../../constants";
 import { createChannel } from "../../utils";
@@ -10,7 +10,7 @@ import { createChannel } from "../../utils";
 // NOTE: This will use a channel deployed by the `TestChannelFactory` that
 // has not been setup on deploy. Otherwise, the
 
-describe("CMCCore.sol", function() {
+describe("CMCCore.sol", function () {
   this.timeout(120_000);
   let channel: Contract;
 
@@ -20,13 +20,21 @@ describe("CMCCore.sol", function() {
 
   describe("setup", async () => {
     beforeEach(async () => {
-      const testFactory = await (ethers as any).getContract("TestChannelFactory", alice);
-      const channelAddress = await testFactory.getChannelAddress(alice.address, bob.address);
-      await (await testFactory.createChannelWithoutSetup(alice.address, bob.address)).wait();
+      const testFactory = await (ethers as any).getContract(
+        "TestChannelFactory",
+        alice
+      );
+      const channelAddress = await testFactory.getChannelAddress(
+        alice.address,
+        bob.address
+      );
+      await (
+        await testFactory.createChannelWithoutSetup(alice.address, bob.address)
+      ).wait();
       channel = new Contract(
         channelAddress,
         (await deployments.getArtifact("TestChannel")).abi,
-        alice,
+        alice
       );
     });
 
@@ -41,26 +49,26 @@ describe("CMCCore.sol", function() {
     it("should fail if it has already been setup", async () => {
       const setupTx = await channel.setup(alice.address, bob.address);
       await setupTx.wait();
-      await expect(
-        channel.setup(alice.address, bob.address),
-      ).revertedWith("CMCCore: ALREADY_SETUP");
+      await expect(channel.setup(alice.address, bob.address)).revertedWith(
+        "CMCCore: ALREADY_SETUP"
+      );
     });
 
     it("should fail to setup if alice is not supplied", async () => {
       await expect(channel.setup(AddressZero, bob.address)).revertedWith(
-        "CMCCore: INVALID_PARTICIPANT",
+        "CMCCore: INVALID_PARTICIPANT"
       );
     });
 
     it("should fail to setup if bob is not supplied", async () => {
       await expect(channel.setup(AddressZero, bob.address)).revertedWith(
-        "CMCCore: INVALID_PARTICIPANT",
+        "CMCCore: INVALID_PARTICIPANT"
       );
     });
 
     it("should fail if alice == bob", async () => {
       await expect(channel.setup(alice.address, alice.address)).revertedWith(
-        "CMCCore: IDENTICAL_PARTICIPANTS",
+        "CMCCore: IDENTICAL_PARTICIPANTS"
       );
     });
   });

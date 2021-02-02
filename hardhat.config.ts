@@ -3,10 +3,11 @@ import "hardhat-deploy";
 import "hardhat-deploy-ethers";
 import "hardhat-typechain";
 import "@nomiclabs/hardhat-etherscan";
+import "@eth-optimism/plugins/hardhat/compiler/0.7.6";
+import "@eth-optimism/plugins/hardhat/ethers";
 
 import { HardhatUserConfig } from "hardhat/types";
 
-import * as packageJson from "./package.json";
 import "./src.ts/tasks";
 
 const urlOverride = process.env.ETH_PROVIDER_URL;
@@ -26,7 +27,8 @@ const config: HardhatUserConfig = {
     tests: "./src.ts",
   },
   solidity: {
-    version: packageJson.devDependencies.solc,
+    // version: packageJson.devDependencies.solc,
+    version: "0.7.3",
     settings: {
       optimizer: {
         enabled: true,
@@ -47,7 +49,8 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       accounts: {
-        accountsBalance: "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        accountsBalance:
+          "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
         mnemonic,
       },
       chainId,
@@ -56,7 +59,8 @@ const config: HardhatUserConfig = {
     },
     localhost: {
       accounts: {
-        accountsBalance: "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        accountsBalance:
+          "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
         mnemonic,
       },
       chainId,

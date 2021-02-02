@@ -21,10 +21,11 @@ library LibAsset {
     }
 
     function getOwnBalance(address assetId) internal view returns (uint256) {
-        return
-            isEther(assetId)
-                ? address(this).balance
-                : IERC20(assetId).balanceOf(address(this));
+      return IERC20(assetId).balanceOf(address(this));
+        // return
+        //     isEther(assetId)
+        //         ? address(this).balance
+        //         : IERC20(assetId).balanceOf(address(this));
     }
 
     function transferEther(address payable recipient, uint256 amount)

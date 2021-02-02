@@ -2,11 +2,12 @@
 pragma solidity ^0.7.1;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/utils/Create2.sol";
+// import "@openzeppelin/contracts/utils/Create2.sol";
 
 import "./interfaces/IChannelFactory.sol";
 import "./interfaces/IVectorChannel.sol";
 import "./lib/LibAsset.sol";
+import "./lib/LibCreate2.sol";
 import "./lib/LibERC20.sol";
 
 /// @title ChannelFactory

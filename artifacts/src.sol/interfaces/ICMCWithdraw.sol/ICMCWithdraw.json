@@ -1,0 +1,127 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ICMCWithdraw",
+  "sourceName": "src.sol/interfaces/ICMCWithdraw.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "channelAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "assetId",
+              "type": "address"
+            },
+            {
+              "internalType": "address payable",
+              "name": "recipient",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "callTo",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "callData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct WithdrawData",
+          "name": "wd",
+          "type": "tuple"
+        }
+      ],
+      "name": "getWithdrawalTransactionRecord",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "channelAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "assetId",
+              "type": "address"
+            },
+            {
+              "internalType": "address payable",
+              "name": "recipient",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nonce",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "callTo",
+              "type": "address"
+            },
+            {
+              "internalType": "bytes",
+              "name": "callData",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct WithdrawData",
+          "name": "wd",
+          "type": "tuple"
+        },
+        {
+          "internalType": "bytes",
+          "name": "aliceSignature",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "bobSignature",
+          "type": "bytes"
+        }
+      ],
+      "name": "withdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
