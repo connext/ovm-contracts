@@ -4,81 +4,49 @@ set -e
 echo "Ethereum testnet entrypoint activated!"
 
 if [[ -d "modules/contracts" ]]
-then cd modules/contracts
+then cd modules/contracts || exit 1
 fi
 
-address_book="${ADDRESS_BOOK:-/data/address-book.json}"
-data_dir="${DATA_DIR:-/tmpfs}"
-chain_id="${CHAIN_ID:-1337}"
-mnemonic="${MNEMONIC:-candy maple cake sugar pudding cream honey rich smooth crumble sweet treat}"
-engine="${ENGINE:-`if [[ "$chain_id" == "1337" ]]; then echo "ganache"; else echo "buidler"; fi`}"
+export ADDRESS_BOOK="${ADDRESS_BOOK:-/data/address-book.json}"
+export CHAIN_ID="${CHAIN_ID:-1337}"
+export MNEMONIC="${MNEMONIC:-candy maple cake sugar pudding cream honey rich smooth crumble sweet treat}"
 
-cwd="`pwd`"
-mkdir -p $data_dir /data /tmpfs
-touch $address_book
+mkdir -p /data /tmp
+touch "$ADDRESS_BOOK"
 
-# TODO: the gasLimit shouldn't need to be 1000x higher than mainnet but cf tests fail otherwise..
+# rm this early so we can use it's presence to indicate when migrations finish
+chain_addresses="$(dirname "$ADDRESS_BOOK")/chain-addresses.json"
+rm -f "$chain_addresses"
 
-if [[ "$engine" == "buidler" ]]
-then
-  echo "Using buidler EVM engine"  
-  echo 'module.exports = {
-    defaultNetwork: "buidlerevm",
-    networks: {
-      buidlerevm: {
-        chainId: '$chain_id',
-        loggingEnabled: false,
-        accounts: [{
-          privateKey: "0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
-          balance: "1000000000000000000000000000"
-        }],
-        blockGasLimit: 9000000000,
-        gasPrice: 1000000000,
-      },
-    },
-  }' > /tmpfs/buidler.config.js
-  launch="$cwd/node_modules/.bin/buidler node --config /tmpfs/buidler.config.js --hostname 0.0.0.0 --port 8545 "
-  cd /tmpfs # bc we need to run buidler node in same dir as buidler.config.js
+## Start hardhat testnet
 
-elif [[ "$engine" == "ganache" ]]
-then
-  echo "Using ganache EVM engine"  
-  launch=$cwd'/node_modules/.bin/ganache-cli \
-    --db='$data_dir' \
-    --defaultBalanceEther=2000000000 \
-    --gasLimit=9000000000 \
-    --gasPrice=1000000000 \
-    --mnemonic="'"$mnemonic"'" \
-    --networkId='$chain_id' \
-    --port=8545 '
-  expose="--host 0.0.0.0"
-else
-  echo 'Expected $ENGINE to be either "ganache" or "buidler"'
-  exit 1
-fi
-
-echo "Starting isolated testnet to migrate contracts.."
-eval "$launch > /dev/null &"
+echo "Starting hardhat node.."
+hardhat node --hostname 0.0.0.0 --port 8545 --no-deploy --as-network localhost > /tmp/hardhat.log &
 pid=$!
+echo "Waiting for testnet to wake up.."
+wait-for -q -t 60 localhost:8545 2>&1 | sed '/nc: bad address/d'
+echo "Good morning!"
 
-wait-for localhost:8545
+echo "Deploying contracts..."
+mkdir -p deployments
+hardhat deploy --network localhost --no-compile --export-all "$ADDRESS_BOOK" | pino-pretty --colorize --translateTime --ignore pid,level,hostname,module
 
-# Because stupid ganache hardcoded it's chainId, prefer this env var over ethProvider.getNetwork()
-export REAL_CHAIN_ID=$chain_id
+# jq docs: https://stedolan.github.io/jq/manual/v1.5/#Builtinoperatorsandfunctions
+jq '
+  .["'"$CHAIN_ID"'"].localhost.contracts
+    | map_values(.address)
+    | to_entries
+    | map(.key = "\(.key)Address")
+    | map(.key |= (capture("(?<a>^[A-Z])(?<b>.*$)"; "g") | "\(.a | ascii_downcase)\(.b)"))
+    | from_entries
+    | { "'"$CHAIN_ID"'": {channelFactoryAddress,testTokenAddress,transferRegistryAddress,hashlockTransferAddress} }
+' "$ADDRESS_BOOK" > "$chain_addresses"
 
-echo "Deploying contracts.."
-node $cwd/dist/src.ts/cli.js migrate --address-book "$address_book" --mnemonic "$mnemonic"
-
-echo "Deploying testnet token.."
-node $cwd/dist/src.ts/cli.js new-token --address-book "$address_book" --mnemonic "$mnemonic"
-
-# Buidler does not persist chain data: it will start with a fresh chain every time
-# Ganache persists chain data so we can restart it & this time we'll expose it to the outside world
-if [[ "$engine" == "ganache" ]]
-then
+echo "Ethprovider started & deployed vector successfully, waiting for kill signal"
+function goodbye {
+  echo "Received kill signal, goodbye"
   kill $pid
-  echo "Starting publically available testnet.."
-  eval "$launch $expose > /tmpfs/ganache.log"
-else
-  wait $pid
-fi
+  exit
+}
+trap goodbye SIGTERM SIGINT
+wait $pid
