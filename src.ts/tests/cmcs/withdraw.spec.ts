@@ -1,17 +1,21 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { ChannelSigner, expect, getRandomAddress, getRandomBytes32 } from "@connext/vector-utils";
+import {
+  ChannelSigner,
+  expect,
+  getRandomAddress,
+  getRandomBytes32,
+} from "@connext/vector-utils";
 import { BigNumber } from "@ethersproject/bignumber";
 import { AddressZero } from "@ethersproject/constants";
 import { Contract } from "@ethersproject/contracts";
 import { parseEther } from "@ethersproject/units";
 import { Wallet } from "@ethersproject/wallet";
-import { deployments } from "hardhat";
 
 import { alice, bob, provider } from "../../constants";
 import { WithdrawCommitment } from "../../commitments";
-import { getContract, createChannel } from "../../utils";
+import { getOvmContract, createOvmChannel } from "../../utils";
 
-describe("CMCWithdraw.sol", function() {
+describe("CMCWithdraw.sol", function () {
   this.timeout(120_000);
   const recipient = Wallet.createRandom().address;
 
@@ -19,17 +23,15 @@ describe("CMCWithdraw.sol", function() {
   let failingToken: Contract;
 
   beforeEach(async () => {
-    await deployments.fixture(); // Start w fresh deployments
-    channel = await createChannel();
+    channel = await createOvmChannel();
 
-    failingToken = await getContract("FailingToken", alice);
+    failingToken = await getOvmContract("FailingToken", alice);
     await failingToken.mint(alice.address, parseEther("0.001"));
 
-    // Send tokens and eth to channel
-    const ethTx = await alice.sendTransaction({ to: channel.address, value: parseEther("0.001") });
-    await ethTx.wait();
-
-    const tokenTx = await failingToken.mint(channel.address, parseEther("0.001"));
+    const tokenTx = await failingToken.mint(
+      channel.address,
+      parseEther("0.001")
+    );
     await tokenTx.wait();
 
     // Make transfers pass
@@ -41,7 +43,7 @@ describe("CMCWithdraw.sol", function() {
     await dontRejectEther.wait();
   });
 
-  it("should work for Ether", async () => {
+  it.skip("should work for Ether", async () => {
     const preWithdrawRecipient = await provider.getBalance(recipient);
     const preWithdrawChannel = await provider.getBalance(channel.address);
     const withdrawAmount = BigNumber.from(1000);
@@ -53,22 +55,34 @@ describe("CMCWithdraw.sol", function() {
       recipient,
       AddressZero,
       withdrawAmount.toString(),
-      nonce.toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(commitment.hashToSign());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(commitment.hashToSign());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      commitment.hashToSign()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      commitment.hashToSign()
+    );
 
     const withdrawData = commitment.getWithdrawData();
-    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be.false;
+    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be
+      .false;
 
     const tx = await channel.withdraw(withdrawData, aliceSig, bobSig);
     await tx.wait();
 
-    expect(await provider.getBalance(recipient)).to.be.eq(preWithdrawRecipient.add(withdrawAmount));
-    expect(await provider.getBalance(channel.address)).to.be.eq(preWithdrawChannel.sub(withdrawAmount));
-    expect(await channel.getTotalTransferred(AddressZero)).to.be.eq(withdrawAmount);
-    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be.true;
+    expect(await provider.getBalance(recipient)).to.be.eq(
+      preWithdrawRecipient.add(withdrawAmount)
+    );
+    expect(await provider.getBalance(channel.address)).to.be.eq(
+      preWithdrawChannel.sub(withdrawAmount)
+    );
+    expect(await channel.getTotalTransferred(AddressZero)).to.be.eq(
+      withdrawAmount
+    );
+    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be
+      .true;
   });
 
   it("should work for standard-compliant tokens", async () => {
@@ -83,34 +97,54 @@ describe("CMCWithdraw.sol", function() {
       recipient,
       failingToken.address,
       withdrawAmount.toString(),
-      nonce.toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(commitment.hashToSign());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(commitment.hashToSign());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      commitment.hashToSign()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      commitment.hashToSign()
+    );
 
     const withdrawData = commitment.getWithdrawData();
-    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be.false;
+    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be
+      .false;
 
     const tx = await channel.withdraw(withdrawData, aliceSig, bobSig);
     await tx.wait();
 
-    expect(await failingToken.balanceOf(recipient)).to.be.eq(preWithdrawRecipient.add(withdrawAmount));
-    expect(await failingToken.balanceOf(channel.address)).to.be.eq(preWithdrawChannel.sub(withdrawAmount));
-    expect(await channel.getTotalTransferred(failingToken.address)).to.be.eq(withdrawAmount);
-    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be.true;
+    expect(await failingToken.balanceOf(recipient)).to.be.eq(
+      preWithdrawRecipient.add(withdrawAmount)
+    );
+    expect(await failingToken.balanceOf(channel.address)).to.be.eq(
+      preWithdrawChannel.sub(withdrawAmount)
+    );
+    expect(await channel.getTotalTransferred(failingToken.address)).to.be.eq(
+      withdrawAmount
+    );
+    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be
+      .true;
   });
 
   it("should work for missing-return-value-bug tokens", async () => {
-    const nonconformingToken = await getContract("NonconformingToken", alice);
+    const nonconformingToken = await getOvmContract(
+      "NonconformingToken",
+      alice
+    );
     await nonconformingToken.mint(alice.address, parseEther("0.001"));
 
     // Send tokens to channel
-    const tokenTx = await nonconformingToken.mint(channel.address, parseEther("0.001"));
+    const tokenTx = await nonconformingToken.mint(
+      channel.address,
+      parseEther("0.001")
+    );
     await tokenTx.wait();
 
     const preWithdrawRecipient = await nonconformingToken.balanceOf(recipient);
-    const preWithdrawChannel = await nonconformingToken.balanceOf(channel.address);
+    const preWithdrawChannel = await nonconformingToken.balanceOf(
+      channel.address
+    );
     const withdrawAmount = BigNumber.from(1000);
     const nonce = BigNumber.from(1);
     const commitment = new WithdrawCommitment(
@@ -120,22 +154,34 @@ describe("CMCWithdraw.sol", function() {
       recipient,
       nonconformingToken.address,
       withdrawAmount.toString(),
-      nonce.toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(commitment.hashToSign());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(commitment.hashToSign());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      commitment.hashToSign()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      commitment.hashToSign()
+    );
 
     const withdrawData = commitment.getWithdrawData();
-    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be.false;
+    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be
+      .false;
 
     const tx = await channel.withdraw(withdrawData, aliceSig, bobSig);
     await tx.wait();
 
-    expect(await nonconformingToken.balanceOf(recipient)).to.be.eq(preWithdrawRecipient.add(withdrawAmount));
-    expect(await nonconformingToken.balanceOf(channel.address)).to.be.eq(preWithdrawChannel.sub(withdrawAmount));
-    expect(await channel.getTotalTransferred(nonconformingToken.address)).to.be.eq(withdrawAmount);
-    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be.true;
+    expect(await nonconformingToken.balanceOf(recipient)).to.be.eq(
+      preWithdrawRecipient.add(withdrawAmount)
+    );
+    expect(await nonconformingToken.balanceOf(channel.address)).to.be.eq(
+      preWithdrawChannel.sub(withdrawAmount)
+    );
+    expect(
+      await channel.getTotalTransferred(nonconformingToken.address)
+    ).to.be.eq(withdrawAmount);
+    expect(await channel.getWithdrawalTransactionRecord(withdrawData)).to.be
+      .true;
   });
 
   it("should fail for wrong channel address", async () => {
@@ -146,16 +192,22 @@ describe("CMCWithdraw.sol", function() {
       alice.address,
       bob.address,
       recipient,
-      AddressZero,
+      failingToken.address,
       withdrawAmount.toString(),
-      nonce.toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(commitment.hashToSign());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(commitment.hashToSign());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      commitment.hashToSign()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      commitment.hashToSign()
+    );
 
     const withdrawData = commitment.getWithdrawData();
-    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith("CMCWithdraw: CHANNEL_MISMATCH");
+    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith(
+      "CMCWithdraw: CHANNEL_MISMATCH"
+    );
   });
 
   it("should fail if it is a no-op (callTo == address(0) && amount == 0)", async () => {
@@ -166,16 +218,22 @@ describe("CMCWithdraw.sol", function() {
       alice.address,
       bob.address,
       recipient,
-      AddressZero,
+      failingToken.address,
       withdrawAmount.toString(),
-      nonce.toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(commitment.hashToSign());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(commitment.hashToSign());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      commitment.hashToSign()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      commitment.hashToSign()
+    );
 
     const withdrawData = commitment.getWithdrawData();
-    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith("CMCWithdraw: NO_OP");
+    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith(
+      "CMCWithdraw: NO_OP"
+    );
   });
 
   it("should fail if alice signature is invalid", async () => {
@@ -186,16 +244,22 @@ describe("CMCWithdraw.sol", function() {
       alice.address,
       bob.address,
       recipient,
-      AddressZero,
+      failingToken.address,
       withdrawAmount.toString(),
-      nonce.toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(getRandomBytes32());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(commitment.hashToSign());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      getRandomBytes32()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      commitment.hashToSign()
+    );
 
     const withdrawData = commitment.getWithdrawData();
-    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith("CMCWithdraw: INVALID_ALICE_SIG");
+    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith(
+      "CMCWithdraw: INVALID_ALICE_SIG"
+    );
   });
 
   it("should fail if bob signature is invalid", async () => {
@@ -206,16 +270,22 @@ describe("CMCWithdraw.sol", function() {
       alice.address,
       bob.address,
       recipient,
-      AddressZero,
+      failingToken.address,
       withdrawAmount.toString(),
-      nonce.toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(commitment.hashToSign());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(getRandomBytes32());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      commitment.hashToSign()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      getRandomBytes32()
+    );
 
     const withdrawData = commitment.getWithdrawData();
-    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith("CMCWithdraw: INVALID_BOB_SIG");
+    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith(
+      "CMCWithdraw: INVALID_BOB_SIG"
+    );
   });
 
   it("should fail if the tx has already been executed", async () => {
@@ -226,20 +296,26 @@ describe("CMCWithdraw.sol", function() {
       alice.address,
       bob.address,
       recipient,
-      AddressZero,
-      withdrawAmount.toString(),
-      nonce.toString(),
+      failingToken.address,
+      withdrawAmount.div(4).toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(commitment.hashToSign());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(commitment.hashToSign());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      commitment.hashToSign()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      commitment.hashToSign()
+    );
 
     const withdrawData = commitment.getWithdrawData();
     await channel.withdraw(withdrawData, aliceSig, bobSig);
-    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith("CMCWithdraw: ALREADY_EXECUTED");
+    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith(
+      "CMCWithdraw: ALREADY_EXECUTED"
+    );
   });
 
-  it("should fail if Ether transfer reverts", async () => {
+  it.skip("should fail if Ether transfer reverts", async () => {
     const rejectEtherRecipient = failingToken.address;
 
     // Make transfers fail
@@ -255,14 +331,20 @@ describe("CMCWithdraw.sol", function() {
       rejectEtherRecipient,
       AddressZero,
       withdrawAmount.toString(),
-      nonce.toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(commitment.hashToSign());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(commitment.hashToSign());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      commitment.hashToSign()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      commitment.hashToSign()
+    );
     const withdrawData = commitment.getWithdrawData();
 
-    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith("ERC20: ETHER_REJECTED");
+    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith(
+      "ERC20: ETHER_REJECTED"
+    );
   });
 
   it("should fail if token transfer fails", async () => {
@@ -279,14 +361,20 @@ describe("CMCWithdraw.sol", function() {
       recipient,
       failingToken.address,
       withdrawAmount.toString(),
-      nonce.toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(commitment.hashToSign());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(commitment.hashToSign());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      commitment.hashToSign()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      commitment.hashToSign()
+    );
     const withdrawData = commitment.getWithdrawData();
 
-    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith("CMCAsset: TRANSFER_FAILED");
+    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith(
+      "CMCAsset: TRANSFER_FAILED"
+    );
   });
 
   it("should fail if token transfer reverts", async () => {
@@ -303,14 +391,20 @@ describe("CMCWithdraw.sol", function() {
       recipient,
       failingToken.address,
       withdrawAmount.toString(),
-      nonce.toString(),
+      nonce.toString()
     );
 
-    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(commitment.hashToSign());
-    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(commitment.hashToSign());
+    const aliceSig = await new ChannelSigner(alice.privateKey).signMessage(
+      commitment.hashToSign()
+    );
+    const bobSig = await new ChannelSigner(bob.privateKey).signMessage(
+      commitment.hashToSign()
+    );
     const withdrawData = commitment.getWithdrawData();
 
-    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith("FAIL: Failing token");
+    await expect(channel.withdraw(withdrawData, aliceSig, bobSig)).revertedWith(
+      "FAIL: Failing token"
+    );
   });
 
   it.skip("should call helper contract if given non-zero address", async () => {});
