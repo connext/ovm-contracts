@@ -8,7 +8,6 @@ import {
   getSignerAddressFromPublicIdentifier,
 } from "@connext/vector-utils";
 import { BigNumber } from "@ethersproject/bignumber";
-import { AddressZero, Zero } from "@ethersproject/constants";
 import { Contract } from "@ethersproject/contracts";
 import { parseEther } from "@ethersproject/units";
 import pino from "pino";
