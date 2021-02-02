@@ -3,10 +3,9 @@ import { RegisteredTransfer } from "@connext/vector-types";
 import { BigNumber } from "@ethersproject/bignumber";
 import { Contract } from "@ethersproject/contracts";
 import { expect } from "chai";
-import { deployments } from "hardhat";
 
 import { alice } from "../../constants";
-import { getContract } from "../../utils";
+import { getOvmContract } from "../../utils";
 
 describe("LibIterableMapping.sol", function () {
   this.timeout(120_000);
@@ -24,10 +23,12 @@ describe("LibIterableMapping.sol", function () {
   };
 
   beforeEach(async () => {
-    await deployments.fixture(); // Start w fresh deployments
-    mapping = await getContract("TestLibIterableMapping", alice);
+    mapping = await getOvmContract("TestLibIterableMapping", alice);
     expect(mapping.address).to.be.a("string");
-    transferDefs = [await getContract("HashlockTransfer", alice), await getContract("Withdraw", alice)];
+    transferDefs = [
+      await getOvmContract("HashlockTransfer", alice),
+      await getOvmContract("Withdraw", alice),
+    ];
     expect(transferDefs[0].address).to.be.a("string");
     expect(transferDefs[1].address).to.be.a("string");
   });
@@ -79,11 +80,15 @@ describe("LibIterableMapping.sol", function () {
 
     it("should work", async () => {
       const hashlockRegistry = await transferDefs[0].getRegistryInformation();
-      expect(await mapping.getTransferDefinitionByName("HashlockTransfer")).to.be.deep.eq(hashlockRegistry);
+      expect(
+        await mapping.getTransferDefinitionByName("HashlockTransfer")
+      ).to.be.deep.eq(hashlockRegistry);
     });
 
     it("should fail if name is not in contract.names", async () => {
-      await expect(mapping.getTransferDefinitionByName("Test")).revertedWith("LibIterableMapping: NAME_NOT_FOUND");
+      await expect(mapping.getTransferDefinitionByName("Test")).revertedWith(
+        "LibIterableMapping: NAME_NOT_FOUND"
+      );
     });
   });
 
@@ -92,16 +97,20 @@ describe("LibIterableMapping.sol", function () {
 
     it("should work", async () => {
       for (const transfer of transferDefs) {
-        const idx = transferDefs.findIndex((t) => t.address === transfer.address);
+        const idx = transferDefs.findIndex(
+          (t) => t.address === transfer.address
+        );
         const registry = await transferDefs[idx].getRegistryInformation();
-        expect(await mapping.getTransferDefinitionByIndex(BigNumber.from(idx))).to.be.deep.eq(registry);
+        expect(
+          await mapping.getTransferDefinitionByIndex(BigNumber.from(idx))
+        ).to.be.deep.eq(registry);
       }
     });
 
     it("should fail if index > self.names.length", async () => {
-      await expect(mapping.getTransferDefinitionByIndex(BigNumber.from(2))).revertedWith(
-        "LibIterableMapping: INVALID_INDEX",
-      );
+      await expect(
+        mapping.getTransferDefinitionByIndex(BigNumber.from(2))
+      ).revertedWith("LibIterableMapping: INVALID_INDEX");
     });
   });
 
@@ -109,7 +118,9 @@ describe("LibIterableMapping.sol", function () {
     beforeEach(async () => await loadMapping());
 
     it("should work", async () => {
-      const info = await Promise.all(transferDefs.map((t) => t.getRegistryInformation()));
+      const info = await Promise.all(
+        transferDefs.map((t) => t.getRegistryInformation())
+      );
       expect(await mapping.getTransferDefinitions()).to.be.deep.eq(info);
     });
   });
@@ -117,7 +128,9 @@ describe("LibIterableMapping.sol", function () {
   describe("addTransferDefinition", () => {
     let info: RegisteredTransfer[];
     beforeEach(async () => {
-      info = await Promise.all(transferDefs.map((t) => t.getRegistryInformation()));
+      info = await Promise.all(
+        transferDefs.map((t) => t.getRegistryInformation())
+      );
     });
 
     it("should work", async () => {
@@ -127,21 +140,25 @@ describe("LibIterableMapping.sol", function () {
     });
 
     it("should fail if name is an empty string", async () => {
-      await expect(mapping.addTransferDefinition({ ...info[0], name: "" })).revertedWith(
-        "LibIterableMapping: EMPTY_NAME",
-      );
+      await expect(
+        mapping.addTransferDefinition({ ...info[0], name: "" })
+      ).revertedWith("LibIterableMapping: EMPTY_NAME");
     });
 
     it("should fail if name is in contract.names", async () => {
       await loadMapping();
-      await expect(mapping.addTransferDefinition(info[0])).revertedWith("LibIterableMapping: NAME_ALREADY_ADDED");
+      await expect(mapping.addTransferDefinition(info[0])).revertedWith(
+        "LibIterableMapping: NAME_ALREADY_ADDED"
+      );
     });
   });
 
   describe("removeTransferDefinition", () => {
     let info: RegisteredTransfer[];
     beforeEach(async () => {
-      info = await Promise.all(transferDefs.map((t) => t.getRegistryInformation()));
+      info = await Promise.all(
+        transferDefs.map((t) => t.getRegistryInformation())
+      );
       await loadMapping();
     });
 
@@ -160,11 +177,15 @@ describe("LibIterableMapping.sol", function () {
     });
 
     it("should fail if name is an empty string", async () => {
-      await expect(mapping.removeTransferDefinition("")).revertedWith("LibIterableMapping: EMPTY_NAME");
+      await expect(mapping.removeTransferDefinition("")).revertedWith(
+        "LibIterableMapping: EMPTY_NAME"
+      );
     });
 
     it("should fail if name is not in contract.names", async () => {
-      await expect(mapping.removeTransferDefinition("Test")).revertedWith("LibIterableMapping: NAME_NOT_FOUND");
+      await expect(mapping.removeTransferDefinition("Test")).revertedWith(
+        "LibIterableMapping: NAME_NOT_FOUND"
+      );
     });
   });
 });
