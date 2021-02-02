@@ -3,6 +3,9 @@ import { l2ethers as ethers, run } from "hardhat";
 
 import { alice, bob, defaultLogLevel, provider } from "./constants";
 
+import * as TestChannel from "../artifacts/src.sol/testing/TestChannel.sol/TestChannel.ovm.json";
+import * as ChannelMastercopy from "../artifacts/src.sol/ChannelMastercopy.sol/ChannelMastercopy.ovm.json";
+
 export const getContract = (ethers as any).getContract;
 
 ////////////////////////////////////////
@@ -22,6 +25,46 @@ export const createChannel = (
   testMode = "yarp"
 ): Promise<Contract> =>
   run("create-channel", { aliceAddress, bobAddress, logLevel, testMode });
+
+export const createOvmChannel = async (
+  aliceAddress: string = alice.address,
+  bobAddress: string = bob.address
+): Promise<Contract> => {
+  const mastercopy = await (
+    await ethers.getContractFactory("ChannelMastercopy", alice)
+  ).deploy();
+  const factory = await (
+    await ethers.getContractFactory("ChannelFactory", alice)
+  ).deploy(mastercopy.address, 0);
+  const channelAddress = await factory.getChannelAddress(
+    aliceAddress,
+    bobAddress
+  );
+  await (await factory.createChannel(aliceAddress, bobAddress)).wait();
+  return new Contract(channelAddress, ChannelMastercopy.abi, alice);
+};
+
+export const createOvmTestChannel = async (
+  aliceAddress: string = alice.address,
+  bobAddress: string = bob.address,
+  setup: boolean = true
+): Promise<Contract> => {
+  const mastercopy = await (
+    await ethers.getContractFactory("TestChannel", alice)
+  ).deploy();
+  const testFactory = await (
+    await ethers.getContractFactory("TestChannelFactory", alice)
+  ).deploy(mastercopy.address, 0);
+  const channelAddress = await testFactory.getChannelAddress(
+    aliceAddress,
+    bobAddress
+  );
+  await (setup
+    ? await testFactory.createChannel(aliceAddress, bobAddress)
+    : await testFactory.createChannelWithoutSetup(aliceAddress, bobAddress)
+  ).wait();
+  return new Contract(channelAddress, TestChannel.abi, alice);
+};
 
 ////////////////////////////////////////
 // Other Utils
