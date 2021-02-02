@@ -27,7 +27,7 @@
     "test": "nyc mocha --exit --require ts-node/register --require hardhat/register --timeout 60000 'src.ts/**/*.spec.ts' | pino-pretty --colorize --translateTime --ignore pid,level,hostname,module"
   },
   "dependencies": {
-    "@eth-optimism/plugins": "0.0.9",
+    "@eth-optimism/plugins": "0.0.10",
     "@connext/pure-evm-wasm": "0.1.4",
     "@connext/vector-types": "0.1.15-beta.2",
     "@connext/vector-utils": "0.1.15-beta.2",
