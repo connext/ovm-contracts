@@ -53,7 +53,7 @@ const getOnchainBalance = async (
     provider
   ).balanceOf(address);
 };
-describe.only("CMCAdjudicator.sol", async function () {
+describe("CMCAdjudicator.sol", async function () {
   this.timeout(120_000);
 
   // These tests could be running on chains without automining
@@ -266,7 +266,6 @@ describe.only("CMCAdjudicator.sol", async function () {
         } else {
           expect(diffAlice).to.be.eq(unprocessedAlice[idx] ?? "0");
           expect(diffBob).to.be.eq(channelMinted.add(unprocessedBob[idx] ?? 0));
-          console.log("diffBob verified");
         }
       })
     );
