@@ -9,7 +9,7 @@ import { expect } from "chai";
 import { alice, bob, rando } from "../../constants";
 import { getOvmContract, createOvmTestChannel } from "../../utils";
 
-describe.only("CMCAsset", function () {
+describe("CMCAsset", function () {
   this.timeout(120_000);
   let assetTransfer: Contract;
   let channel: Contract;
