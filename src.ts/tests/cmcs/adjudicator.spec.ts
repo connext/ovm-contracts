@@ -21,12 +21,13 @@ import {
   signChannelMessage,
 } from "@connext/vector-utils";
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
-import { AddressZero, HashZero, Zero } from "@ethersproject/constants";
+import { HashZero, Zero } from "@ethersproject/constants";
 import { Contract } from "@ethersproject/contracts";
 import { keccak256 } from "@ethersproject/keccak256";
 import { parseEther } from "@ethersproject/units";
 import { deployments } from "hardhat";
 import { MerkleTree } from "merkletreejs";
+import { parse } from "path";
 
 import {
   bob,
@@ -46,15 +47,13 @@ const getOnchainBalance = async (
   assetId: string,
   address: string
 ): Promise<BigNumber> => {
-  return assetId === AddressZero
-    ? provider.getBalance(address)
-    : new Contract(
-        assetId,
-        (await deployments.getArtifact("TestToken")).abi,
-        provider
-      ).balanceOf(address);
+  return new Contract(
+    assetId,
+    (await deployments.getArtifact("TestToken")).abi,
+    provider
+  ).balanceOf(address);
 };
-describe("CMCAdjudicator.sol", async function () {
+describe.only("CMCAdjudicator.sol", async function () {
   this.timeout(120_000);
 
   // These tests could be running on chains without automining
@@ -64,6 +63,7 @@ describe("CMCAdjudicator.sol", async function () {
 
   let channel: Contract;
   let token: Contract;
+  let token2: Contract;
   let transferDefinition: Contract;
   let channelState: FullChannelState;
   let transferState: FullTransferState;
@@ -72,6 +72,8 @@ describe("CMCAdjudicator.sol", async function () {
 
   const aliceSigner = new ChannelSigner(alice.privateKey, provider);
   const bobSigner = new ChannelSigner(bob.privateKey, provider);
+
+  const channelMinted = parseEther("1");
 
   // Helper to verify the channel dispute
   const verifyChannelDispute = async (
@@ -121,13 +123,9 @@ describe("CMCAdjudicator.sol", async function () {
       const idx = ccs.assetIds.findIndex((a: any) => a === assetId);
       const depositsB = BigNumber.from(ccs.processedDepositsB[idx]);
       if (!depositsB.isZero()) {
-        const bobTx =
-          assetId === AddressZero
-            ? await bob.sendTransaction({
-                to: channel.address,
-                value: depositsB,
-              })
-            : await token.connect(bob).transfer(channel.address, depositsB);
+        const bobTx = await token
+          .connect(bob)
+          .transfer(channel.address, depositsB);
         await bobTx.wait();
       }
 
@@ -194,6 +192,11 @@ describe("CMCAdjudicator.sol", async function () {
     const preDefundBob = await Promise.all<BigNumber>(
       assetIds.map((assetId: string) => getOnchainBalance(assetId, bob.address))
     );
+    const preDefundChannel = await Promise.all<BigNumber>(
+      assetIds.map((assetId: string) =>
+        getOnchainBalance(assetId, channel.address)
+      )
+    );
     // Defund channel
     await (await channel.defundChannel(ccs, defundedAssets, indices)).wait();
     // Withdraw all assets from channel
@@ -217,6 +220,11 @@ describe("CMCAdjudicator.sol", async function () {
     const postDefundBob = await Promise.all<BigNumber>(
       assetIds.map((assetId: string) => getOnchainBalance(assetId, bob.address))
     );
+    const postDefundChannel = await Promise.all<BigNumber>(
+      assetIds.map((assetId: string) =>
+        getOnchainBalance(assetId, channel.address)
+      )
+    );
     // Verify change in balances + defund nonce
     await Promise.all(
       assetIds.map(async (assetId: string) => {
@@ -237,37 +245,47 @@ describe("CMCAdjudicator.sol", async function () {
         }
         const diffAlice = postDefundAlice[idx].sub(preDefundAlice[idx]);
         const diffBob = postDefundBob[idx].sub(preDefundBob[idx]);
+        const diffChannel = preDefundChannel[idx].sub(postDefundChannel[idx]);
+
         if (inChannel) {
-          expect(diffAlice).to.be.eq(
-            defunded
-              ? BigNumber.from(ccs.balances[idx].amount[0]).add(
-                  unprocessedAlice[idx] ?? "0"
-                )
-              : 0
+          // amt = offchain + unprocessed + (if bob) extranneous
+          const aliceAmt = BigNumber.from(ccs.balances[idx].amount[0]).add(
+            unprocessedAlice[idx] ?? "0"
           );
+          const bobAmt = BigNumber.from(ccs.balances[idx].amount[1]).add(
+            unprocessedBob[idx] ?? "0"
+          );
+          const _unaccounted = diffChannel.sub(aliceAmt).sub(bobAmt);
+          const unaccounted = _unaccounted.isNegative()
+            ? BigNumber.from(0)
+            : _unaccounted;
+          expect(diffAlice).to.be.eq(defunded ? aliceAmt : 0);
           expect(diffBob).to.be.eq(
-            defunded
-              ? BigNumber.from(ccs.balances[idx].amount[1]).add(
-                  unprocessedBob[idx] ?? "0"
-                )
-              : 0
+            defunded ? bobAmt.add(unaccounted) : unaccounted
           );
         } else {
           expect(diffAlice).to.be.eq(unprocessedAlice[idx] ?? "0");
-          expect(diffBob).to.be.eq(unprocessedBob[idx] ?? "0");
+          expect(diffBob).to.be.eq(channelMinted.add(unprocessedBob[idx] ?? 0));
+          console.log("diffBob verified");
         }
       })
     );
   };
 
   beforeEach(async () => {
-    await deployments.fixture(); // Start w fresh deployments
     token = await getOvmContract("TestToken", alice);
+    token2 = await getOvmContract("TestToken", alice);
     transferDefinition = await getOvmContract("HashlockTransfer", alice);
-    // mint token to alice/bob
+    // mint tokens to alice/bob
     await (await token.mint(alice.address, parseEther("1"))).wait();
     await (await token.mint(bob.address, parseEther("1"))).wait();
+    await (await token2.mint(alice.address, parseEther("1"))).wait();
+    await (await token2.mint(bob.address, parseEther("1"))).wait();
+
     channel = await createOvmChannel(alice.address, bob.address);
+    await (await token.mint(channel.address, channelMinted)).wait();
+    await (await token2.mint(channel.address, channelMinted)).wait();
+
     const preImage = getRandomBytes32();
     const state = {
       lockHash: createlockHash(preImage),
@@ -277,7 +295,7 @@ describe("CMCAdjudicator.sol", async function () {
       initiator: alice.address,
       responder: bob.address,
       transferDefinition: transferDefinition.address,
-      assetId: AddressZero,
+      assetId: token.address,
       channelAddress: channel.address,
       // use random receiver addr to verify transfer when bob must dispute
       balance: { to: [alice.address, getRandomAddress()], amount: ["7", "0"] },
@@ -291,7 +309,7 @@ describe("CMCAdjudicator.sol", async function () {
       "create",
       {
         channelAddress: channel.address,
-        assetIds: [AddressZero],
+        assetIds: [token.address],
         balances: [{ to: [alice.address, bob.address], amount: ["17", "45"] }],
         processedDepositsA: ["0"],
         processedDepositsB: ["62"],
@@ -545,7 +563,7 @@ describe("CMCAdjudicator.sol", async function () {
       }
       const multiAsset = {
         ...channelState,
-        assetIds: [AddressZero, token.address],
+        assetIds: [token2.address, token.address],
         defundNonces: ["1", "1"],
         balances: [
           { to: [alice.address, bob.address], amount: ["17", "26"] },
@@ -566,7 +584,7 @@ describe("CMCAdjudicator.sol", async function () {
       }
       const multiAsset = {
         ...channelState,
-        assetIds: [AddressZero, token.address],
+        assetIds: [token2.address, token.address],
         defundNonces: ["1", "1"],
         balances: [
           { to: [alice.address, bob.address], amount: ["17", "26"] },
@@ -579,7 +597,7 @@ describe("CMCAdjudicator.sol", async function () {
       await fundChannel(multiAsset);
       await disputeChannel(multiAsset);
       await expect(
-        channel.defundChannel(multiAsset, [AddressZero], [BigNumber.from(1)])
+        channel.defundChannel(multiAsset, [token2.address], [BigNumber.from(1)])
       ).revertedWith("CMCAdjudicator: INDEX_MISMATCH");
     });
 
@@ -589,7 +607,7 @@ describe("CMCAdjudicator.sol", async function () {
       }
       const multiAsset = {
         ...channelState,
-        assetIds: [AddressZero, token.address],
+        assetIds: [token2.address, token.address],
         defundNonces: ["1", "1"],
         balances: [
           { to: [alice.address, bob.address], amount: ["17", "26"] },
@@ -601,7 +619,7 @@ describe("CMCAdjudicator.sol", async function () {
       // Deposit all funds into channel
       await fundChannel(multiAsset);
       await disputeChannel(multiAsset);
-      await defundChannelAndVerify(multiAsset, [], [], [AddressZero], []);
+      await defundChannelAndVerify(multiAsset, [], [], [token2.address], []);
     });
 
     it("should work if providing inidices to defund", async function () {
@@ -610,7 +628,7 @@ describe("CMCAdjudicator.sol", async function () {
       }
       const multiAsset = {
         ...channelState,
-        assetIds: [AddressZero, token.address],
+        assetIds: [token2.address, token.address],
         defundNonces: ["1", "1"],
         balances: [
           { to: [alice.address, bob.address], amount: ["17", "26"] },
@@ -626,7 +644,7 @@ describe("CMCAdjudicator.sol", async function () {
         multiAsset,
         [],
         [],
-        [AddressZero],
+        [token2.address],
         [BigNumber.from(0)]
       );
     });
@@ -639,10 +657,10 @@ describe("CMCAdjudicator.sol", async function () {
       await fundChannel(channelState);
       // Send funds to multisig without reconciling offchain state
       const unprocessed = BigNumber.from(18);
-      const bobTx = await bob.sendTransaction({
-        to: channel.address,
-        value: unprocessed,
-      });
+      const bobTx = await token2.transfer(
+        channelState.channelAddress,
+        unprocessed
+      );
       await bobTx.wait();
 
       // Dispute + defund channel
@@ -662,10 +680,10 @@ describe("CMCAdjudicator.sol", async function () {
       await fundChannel(onlyTokens);
       // Send funds to multisig without reconciling offchain state
       const unprocessed = BigNumber.from(18);
-      const bobTx = await bob.sendTransaction({
-        to: onlyTokens.channelAddress,
-        value: unprocessed,
-      });
+      const bobTx = await token2.transfer(
+        onlyTokens.channelAddress,
+        unprocessed
+      );
       await bobTx.wait();
 
       // Dispute + defund channel
@@ -674,7 +692,7 @@ describe("CMCAdjudicator.sol", async function () {
         onlyTokens,
         [],
         ["0", unprocessed],
-        [token.address, AddressZero]
+        [token.address, token2.address]
       );
     });
   });
