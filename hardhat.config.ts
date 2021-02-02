@@ -3,7 +3,8 @@ import "hardhat-deploy";
 import "hardhat-deploy-ethers";
 import "hardhat-typechain";
 import "@nomiclabs/hardhat-etherscan";
-import "@eth-optimism/plugins/hardhat/compiler/0.7.6";
+
+import "@eth-optimism/plugins/hardhat/compiler";
 import "@eth-optimism/plugins/hardhat/ethers";
 
 import { HardhatUserConfig } from "hardhat/types";
