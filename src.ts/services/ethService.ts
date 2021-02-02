@@ -280,8 +280,8 @@ export class EthereumChainService
           const gas = _gas.add(EXTRA_GAS);
           return channelFactory.createChannel(
             channelState.alice,
-            channelState.bob,
-            { gasPrice, gasLimit: gas }
+            channelState.bob
+            // { gasPrice, gasLimit: gas }
           );
         }
       );
@@ -378,8 +378,8 @@ export class EthereumChainService
             amount,
             {
               value: amount,
-              gasPrice,
-              gasLimit: gas,
+              // gasPrice,
+              // gasLimit: gas,
             }
           );
         }
@@ -441,11 +441,11 @@ export class EthereumChainService
           channelState.alice,
           channelState.bob,
           assetId,
-          amount,
-          {
-            gasPrice,
-            gasLimit: gas,
-          }
+          amount
+          // {
+          //   gasPrice,
+          //   gasLimit: gas,
+          // }
         );
       }
     ) as Promise<Result<TransactionResponse, ChainError>>;
@@ -574,9 +574,9 @@ export class EthereumChainService
       channelState.channelAddress,
       TransactionReason.withdraw,
       async () => {
-        const _gas = await signer.estimateGas(minTx);
-        const gas = _gas.add(EXTRA_GAS);
-        return signer.sendTransaction({ ...minTx, gasPrice, gasLimit: gas });
+        // const _gas = await signer.estimateGas(minTx);
+        // const gas = _gas.add(EXTRA_GAS);
+        return signer.sendTransaction({ ...minTx }); //gasPrice, gasLimit: gas });
       }
     ) as Promise<Result<TransactionResponse, ChainError>>;
   }
