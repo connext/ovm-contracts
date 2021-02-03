@@ -1,4 +1,4 @@
-# Vector Contracts
+# Vector OVM Contracts
 
 The contracts module contains the core solidity files that back Vector's security onchain.
 
@@ -6,6 +6,7 @@ The contracts module contains the core solidity files that back Vector's securit
 
 Contents:
 
+- [Differences from EVM contracts](#differences-from-evm)
 - [Developing and Running Tests](#developing-and-running-tests)
 - [Contracts CLI](#contract-cli)
 - [Contract Architecture](#contract-architecture)
@@ -17,13 +18,23 @@ Contents:
 - [Depositing and Withdrawing](#depositing-and-withdrawing)
 - [Security](#security)
 
+## Differences from EVM contracts
+
+There are several modifications and differences to be noted between this module and the [evm-compatible contracts module](https://github.com/connext/vector/tree/main/modules/contracts):
+
+1. No `SELFBALANCE` opcode, so we have to use a forked `Create2` open zeppelin contract and modify the `CMCDeposit` and `LibAsset` to require the deposit isn't ether by asset id.
+2. The `getCreate2MultisigAddress` offchain helper does not compute the same address as the `ChannelFactory` contract. (NOTE: the `getChannelAddress` on the `ChannelFactory` does return the correct address).
+3. The changes to add gas buffer to the `ethService` have been removed.
+4. All the ether based tests were removed or reworked to use tokens.
+5. The `"hardhat-deploy"` plugin does not work with the OVM, so the hardhat tasks were not tested against the ovm. NOTE: `hre.[ethers/l2ethers].getContract` / `deployments.fixture` also fails due to this issue.
+
 ## Developing and Running Tests
 
-In `~/vector` (root), run:
+In `~/ovm-contracts` (root), run:
 
-- `make contracts` to build just the contracts & it's dependencies
-- `make test-contracts` to run the tests
-- `make watch-contracts` to test in watch-mode
+- `npm install` to install all dependencies
+- `npm run build` to build package + compile contracts
+- `npm run test` to run the tests
 
 ## Contract CLI
 
