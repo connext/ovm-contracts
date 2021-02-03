@@ -1,6 +1,6 @@
 {
-  "name": "@connext/vector-contracts",
-  "version": "0.1.15-beta.2",
+  "name": "@connext/vector-ovm-contracts",
+  "version": "0.0.1",
   "license": "ISC",
   "description": "Smart contracts powering Connext's minimalist channel platform",
   "keywords": [
