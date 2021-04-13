@@ -1,11 +1,10 @@
 import "@nomiclabs/hardhat-waffle";
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
-import "hardhat-typechain";
+import "@typechain/hardhat";
 import "@nomiclabs/hardhat-etherscan";
 
 import "@eth-optimism/plugins/hardhat/compiler";
-import "@eth-optimism/plugins/hardhat/ethers";
 
 import { HardhatUserConfig } from "hardhat/types";
 
@@ -69,40 +68,12 @@ const config: HardhatUserConfig = {
       saveDeployments: false,
       url: urlOverride || "http://localhost:8545",
     },
-    mainnet: {
-      accounts: { mnemonic },
-      chainId: 1,
-      url: urlOverride || "http://localhost:8545",
-    },
-    rinkeby: {
-      accounts: { mnemonic },
-      chainId: 4,
-      url: urlOverride || "http://localhost:8545",
-    },
-    goerli: {
-      accounts: { mnemonic },
-      chainId: 5,
-      url: urlOverride || "http://localhost:8545",
-    },
-    kovan: {
-      accounts: { mnemonic },
-      chainId: 42,
-      url: urlOverride || "http://localhost:8545",
-    },
-    matic: {
-      accounts: { mnemonic },
-      chainId: 137,
-      url: urlOverride || "http://localhost:8545",
-    },
-    mumbai: {
-      accounts: { mnemonic },
-      chainId: 80001,
-      url: urlOverride || "https://rpc-mumbai.matic.today",
-    },
-    arbitrumtest: {
-      accounts: { mnemonic },
-      chainId: 79377087078960,
-      url: urlOverride || "https://kovan3.arbitrum.io/rpc",
+    optimismkovan1: {
+      url: "https://kovan.optimism.io",
+      accounts: {
+        mnemonic,
+      },
+      ovm: true, // this set the network as using the ovm and ensure contract will be compiled against that.
     },
   },
 };

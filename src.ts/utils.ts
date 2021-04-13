@@ -1,10 +1,10 @@
 import { Contract } from "@ethersproject/contracts";
-import { l2ethers as ethers, run } from "hardhat";
+import { ethers, run } from "hardhat";
 
 import { alice, bob, defaultLogLevel, provider } from "./constants";
 
-import * as TestChannel from "../artifacts/src.sol/testing/TestChannel.sol/TestChannel.ovm.json";
-import * as ChannelMastercopy from "../artifacts/src.sol/ChannelMastercopy.sol/ChannelMastercopy.ovm.json";
+import * as TestChannel from "../artifacts-ovm/src.sol/testing/TestChannel.sol/TestChannel.json";
+import * as ChannelMastercopy from "../artifacts-ovm/src.sol/ChannelMastercopy.sol/ChannelMastercopy.json";
 import { Wallet } from "@ethersproject/wallet";
 
 export const getContract = (ethers as any).getContract;

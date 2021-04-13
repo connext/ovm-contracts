@@ -1,7 +1,7 @@
 import { HDNode } from "@ethersproject/hdnode";
 import { Wallet } from "@ethersproject/wallet";
 import { JsonRpcProvider } from "@ethersproject/providers";
-import { network, l2ethers as ethers } from "hardhat";
+import { network, ethers } from "hardhat";
 import pino from "pino";
 
 // Get defaults from env

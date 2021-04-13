@@ -4,3 +4,5 @@ dist
 typechain
 cache
 artifacts
+artifacts-ovm
+cache-ovm

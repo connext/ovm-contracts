@@ -3,7 +3,7 @@ import { EtherSymbol, Zero } from "@ethersproject/constants";
 import { formatEther } from "@ethersproject/units";
 import {
   deployments,
-  l2ethers as ethers,
+  ethers,
   getNamedAccounts,
   getChainId,
   network,
@@ -29,11 +29,11 @@ const func: DeployFunction = async () => {
     )}`
   );
 
-  if (balance.eq(Zero)) {
-    throw new Error(
-      `Account ${deployer} has zero balance on chain ${chainId}, aborting migration`
-    );
-  }
+  // if (balance.eq(Zero)) {
+  //   throw new Error(
+  //     `Account ${deployer} has zero balance on chain ${chainId}, aborting migration`
+  //   );
+  // }
 
   ////////////////////////////////////////
   // Run the migration
