@@ -6,7 +6,7 @@ The contracts module contains the core solidity files that back Vector's securit
 
 Contents:
 
-- [Differences from EVM contracts](#differences-from-evm)
+- [Differences from EVM contracts](#differences-from-evm-contracts)
 - [Developing and Running Tests](#developing-and-running-tests)
 - [Contracts CLI](#contract-cli)
 - [Contract Architecture](#contract-architecture)
